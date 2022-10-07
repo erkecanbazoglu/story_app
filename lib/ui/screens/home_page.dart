@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../data/providers/photos.dart';
+import 'first_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   int _counter = 0;
-  final PhotosAPI _photosAPI = PhotosAPI();
 
   void _incrementCounter() {
     setState(() {
@@ -21,11 +17,13 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  final PhotosAPI _photosAPI = PhotosAPI();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text("Codeway"),
       ),
       body: Center(
         child: Column(
@@ -43,8 +41,14 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         // onPressed: _incrementCounter,
-        onPressed: () async {
-          await _photosAPI.getPhotos();
+        // onPressed: () async {
+        //   await _photosAPI.getPhotos();
+        // },
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => FirstPage()),
+          );
         },
         tooltip: 'Increment',
         child: const Icon(Icons.add),

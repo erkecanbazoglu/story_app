@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import './ui/screens/home_page.dart';
+import 'ui/screens/welcome_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.amber,
       ),
-      home: const HomePage(title: 'Flutter Story App'),
+      home: const WelcomePage(title: 'Flutter Story App'),
     );
   }
 }
