@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../data/providers/photos.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, required this.title}) : super(key: key);
@@ -11,6 +12,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _counter = 0;
+  final PhotosAPI _photosAPI = PhotosAPI();
 
   void _incrementCounter() {
     setState(() {
@@ -40,7 +42,10 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        // onPressed: _incrementCounter,
+        onPressed: () async {
+          await _photosAPI.getPhotos();
+        },
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
