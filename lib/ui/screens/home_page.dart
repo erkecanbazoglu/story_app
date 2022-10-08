@@ -96,6 +96,7 @@ class _HomePageState extends State<HomePage> {
         physics: BouncingScrollPhysics(),
         controller: _scrollController,
         slivers: <Widget>[
+          //Stories
           SliverToBoxAdapter(
             child: Container(
               height: 60,
@@ -110,6 +111,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+          //Posts
           SliverList(
             key: key,
             delegate: SliverChildBuilderDelegate(
