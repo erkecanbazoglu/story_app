@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:test_app/ui/widgets/video_player_widget.dart';
@@ -6,19 +8,22 @@ import 'dart:math' as math;
 import 'dart:async';
 import '../../data/models/user.dart';
 import '../widgets/progress_bars.dart';
+import '../widgets/animated_bar.dart';
 
-class StoryPage extends StatefulWidget {
+class StoryPage2 extends StatefulWidget {
   final List<Story> stories;
 
-  const StoryPage({Key? key, required this.stories}) : super(key: key);
+  const StoryPage2({Key? key, required this.stories}) : super(key: key);
 
   @override
-  State<StoryPage> createState() => _StoryPageState();
+  State<StoryPage2> createState() => _StoryPage2State();
 }
 
-class _StoryPageState extends State<StoryPage> {
+class _StoryPage2State extends State<StoryPage2>
+    with SingleTickerProviderStateMixin {
   late PageController _pageController;
   late VideoPlayerController _videoController;
+  late AnimationController _animationController;
   int _currentIndex = 0;
   List<double> percentWatched = [];
   Timer? timer;
@@ -26,59 +31,57 @@ class _StoryPageState extends State<StoryPage> {
   double? screenWidth;
   double? dx;
 
-  int get _getStoryDuration {
-    //Return story duration in milliseconds
-    if (widget.stories[_currentIndex].media == (MediaType.video)) {
-      Duration videoDuration = _videoController.value.duration;
-      return videoDuration.inMilliseconds;
-    } else {
-      return 5000;
+  void _startStory({Story? story, bool shouldAnimate = true}) {
+    //Stop the animation and reset the animation bar
+    _animationController.stop();
+    _animationController.reset();
+
+    switch (story?.media) {
+      case MediaType.image:
+        //Set the image duration and start the animation
+        _animationController.duration = story?.duration;
+        _animationController.forward();
+        break;
+      case MediaType.video:
+        //Initialize the video controller
+        _videoController =
+            VideoPlayerController.network(story?.url ?? "deafult")
+              ..initialize().then((_) {
+                setState(() {});
+                if (_videoController.value.isInitialized) {
+                  //Set the video duration and start the animation
+                  _animationController.duration =
+                      _videoController.value.duration;
+                  _videoController.play();
+                  _animationController.forward();
+                }
+              });
+        break;
     }
-  }
-
-  void _startStories() {
-    int storyDuration = (_getStoryDuration / 10).round();
-    timer = Timer.periodic(Duration(milliseconds: 50), (_) {
-      setState(() {
-        // only add 0.01 as long as it's below 1
-        if (percentWatched[_currentIndex] + 0.01 < 1) {
-          percentWatched[_currentIndex] += 0.01;
-        }
-        // if adding 0.01 exceeds 1, set percentage to 1 and cancel timer
-        else {
-          percentWatched[_currentIndex] = 1;
-          timer?.cancel();
-
-          // also go to next story as long as there are more stories to go through
-          if (_currentIndex < widget.stories.length - 1) {
-            _currentIndex++;
-            animateToStory(_currentIndex);
-            // restart story timer
-            _startStories();
-          }
-          // if we are finishing the last story then return to homepage
-          else {
-            Navigator.pop(context);
-          }
-        }
-      });
-    });
+    if (shouldAnimate) {
+      _pageController.animateToPage(_currentIndex,
+          duration: const Duration(milliseconds: 1), curve: Curves.easeInOut);
+    }
   }
 
   //Gesture Functions
   void _onTapDown(TapDownDetails details) {
     screenWidth = MediaQuery.of(context).size.width;
     dx = details.globalPosition.dx;
+    print(dx);
+    print(screenWidth);
   }
 
   void _onLongPressCancel() {
+    print(dx);
+    print(screenWidth);
     if ((dx ?? 1) < (screenWidth ?? 400) / 3) {
       setState(() {
         if (_currentIndex > 0) {
           percentWatched[_currentIndex] = 0;
           percentWatched[_currentIndex - 1] = 0;
           _currentIndex--;
-          animateToStory(_currentIndex);
+          _startStory(story: widget.stories[_currentIndex]);
         } else {
           percentWatched[_currentIndex] = 0;
         }
@@ -88,7 +91,7 @@ class _StoryPageState extends State<StoryPage> {
         if (_currentIndex < widget.stories.length - 1) {
           percentWatched[_currentIndex] = 1;
           _currentIndex++;
-          animateToStory(_currentIndex);
+          _startStory(story: widget.stories[_currentIndex]);
         } else {
           percentWatched[_currentIndex] = 1;
         }
@@ -100,42 +103,60 @@ class _StoryPageState extends State<StoryPage> {
     if (story.media == MediaType.video) {
       if (_videoController.value.isPlaying) {
         _videoController.pause();
+        _animationController.stop();
       }
-      // //might not be necessary
-      // else {
-      //   _videoController.play();
-      // }
     }
   }
 
   void _onLongPressEnd(story) {
     if (story.media == MediaType.video) {
       _videoController.play();
+      _animationController.forward();
     }
   }
 
-  void animateToStory(index) {
-    _pageController.animateToPage(index,
-        duration: const Duration(milliseconds: 1), curve: Curves.easeInOut);
+  void initVideoController(List<Story> stories) {
+    //This function detects the first video story
+    for (int i = 0; i < stories.length; i++) {
+      if (stories[i].media == MediaType.video) {
+        _videoController = VideoPlayerController.network(stories[i].url)
+          ..initialize().then((_) {
+            setState(() {});
+          });
+        break;
+      }
+    }
   }
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
-    _videoController = VideoPlayerController.network(widget.stories[2].url)
-      ..initialize().then((_) {
-        // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-        setState(() {});
-        _videoController.play();
-      });
+    _animationController = AnimationController(vsync: this);
 
-    //Make all the stories unwatched
-    for (int i = 0; i < widget.stories.length; i++) {
-      percentWatched.add(0);
-    }
+    //The very first story
+    final Story initialStory = widget.stories[0];
 
-    _startStories();
+    //To make video controller initialized
+    initVideoController(widget.stories);
+
+    //Starting the stories
+    _startStory(story: initialStory, shouldAnimate: false);
+
+    _animationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _animationController.stop();
+        _animationController.reset();
+        setState(() {
+          if (_currentIndex + 1 < widget.stories.length) {
+            _currentIndex++;
+            _startStory(story: widget.stories[_currentIndex]);
+          } else {
+            Navigator.pop(context);
+          }
+        });
+      }
+    });
   }
 
   @override
@@ -156,7 +177,7 @@ class _StoryPageState extends State<StoryPage> {
                 _onLongPressEnd(widget.stories[_currentIndex]),
             child: PageView.builder(
                 controller: _pageController,
-                // physics: NeverScrollableScrollPhysics(),
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: widget.stories.length,
                 itemBuilder: (context, index) {
                   final story = widget.stories[index];
@@ -182,11 +203,20 @@ class _StoryPageState extends State<StoryPage> {
             child: Column(
               children: [
                 Row(
-                  children: [
-                    ProgressBars(
-                      percentWatched: percentWatched,
-                    ),
-                  ],
+                  children: widget.stories
+                      .asMap()
+                      .map((index, storyItem) {
+                        return MapEntry(
+                          index,
+                          AnimatedBar(
+                            animationController: _animationController,
+                            position: index,
+                            currentIndex: _currentIndex,
+                          ),
+                        );
+                      })
+                      .values
+                      .toList(),
                 ),
                 Expanded(
                   child: Padding(
@@ -346,8 +376,8 @@ class _StoryPageState extends State<StoryPage> {
   @override
   void dispose() {
     _pageController.dispose();
+    _animationController.dispose();
     _videoController.dispose();
-    timer?.cancel();
     super.dispose();
   }
 }

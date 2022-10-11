@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/story_page.dart';
+import '../../../data/models/data.dart';
+import '../screens/story_page2.dart';
 
 class Story extends StatefulWidget {
   const Story({required this.photo});
@@ -27,11 +29,14 @@ class _StoryState extends State<Story> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => StoryPage()),
+            MaterialPageRoute(
+                builder: (context) => StoryPage2(
+                      stories: stories,
+                    )),
           );
         },
         child: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             // color: Colors.amber,
             gradient: LinearGradient(
               begin: Alignment.bottomLeft,
@@ -48,7 +53,7 @@ class _StoryState extends State<Story> {
           child: Padding(
             padding: const EdgeInsets.all(2),
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.all(
                   Radius.circular(40.0),
