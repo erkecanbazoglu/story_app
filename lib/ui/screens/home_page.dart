@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/providers/photos.dart';
-import 'first_page.dart';
+import 'others/first_page.dart';
 import '../widgets/photo_post_widget.dart';
 import '../widgets/story_widget.dart';
 
@@ -36,8 +36,8 @@ class _HomePageState extends State<HomePage> {
         title: Row(
           children: [
             Image.asset(
-              'images/codeway.png',
-              // 'images/avatars/1.jpg',
+              'assets/codeway.png',
+              // 'assets/avatars/1.jpg',
               height: 36,
             ),
           ],
@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage> {
                 Icons.sms_outlined,
               ),
               onTap: () {
-                //Like
+                //Send
               },
             ),
           ),
@@ -96,6 +96,7 @@ class _HomePageState extends State<HomePage> {
         physics: BouncingScrollPhysics(),
         controller: _scrollController,
         slivers: <Widget>[
+          //Stories
           SliverToBoxAdapter(
             child: Container(
               height: 60,
@@ -110,6 +111,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+          //Posts
           SliverList(
             key: key,
             delegate: SliverChildBuilderDelegate(
@@ -132,6 +134,7 @@ class _HomePageState extends State<HomePage> {
         // onPressed: () async {
         //   await _photosAPI.getPhotos();
         // },
+        heroTag: "floating-action-btn",
         onPressed: () {
           Navigator.push(
             context,
