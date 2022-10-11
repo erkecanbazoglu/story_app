@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/ui/services/router_service.dart';
 import 'ui/screens/welcome_page.dart';
 
 void main() {
@@ -13,6 +14,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Story App',
+      initialRoute: '/',
+      navigatorKey: RouterService().navigatorKey,
       theme: ThemeData(
         primarySwatch: Colors.amber,
       ),

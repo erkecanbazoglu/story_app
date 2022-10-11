@@ -50,6 +50,7 @@ class _HomePageState extends State<HomePage> {
             MaterialPageRoute(builder: (context) => FirstPage()),
           );
         },
+        heroTag: "floating-action-btn",
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ),
