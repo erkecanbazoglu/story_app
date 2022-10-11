@@ -37,7 +37,7 @@ class _PhotoPostState extends State<PhotoPost> {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundImage: AssetImage('images/avatars/${photo}.jpg'),
+                backgroundImage: AssetImage('assets/avatars/${photo}.jpg'),
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 12),
@@ -80,7 +80,7 @@ class _PhotoPostState extends State<PhotoPost> {
           // height: MediaQuery.of(context).size.height * 0.35,
           width: double.infinity,
           child: Image.asset(
-            'images/posts/${photo}.jpg',
+            'assets/posts/${photo}.jpg',
             fit: BoxFit.cover,
           ),
         ),
@@ -102,7 +102,7 @@ class _PhotoPostState extends State<PhotoPost> {
                         //Like
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 20,
                     ),
                     InkWell(
@@ -111,7 +111,7 @@ class _PhotoPostState extends State<PhotoPost> {
                         //Comment
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 20,
                     ),
                     Transform.rotate(
@@ -148,12 +148,12 @@ class _PhotoPostState extends State<PhotoPost> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: RichText(
-                  text: TextSpan(
+                  text: const TextSpan(
                     style: const TextStyle(color: Colors.black),
                     children: [
                       TextSpan(
                         text: "User name",
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
