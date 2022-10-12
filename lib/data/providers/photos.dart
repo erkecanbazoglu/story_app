@@ -4,7 +4,8 @@ import 'dart:convert' as convert;
 class PhotosAPI {
   Future<void> getPhotos() async {
     // Request to website below:
-    // "https://jsonplaceholder.typicode.com/photos"
+    // "https://jsonplaceholder.typicode.com/photos/"
+
     var url = Uri.https('jsonplaceholder.typicode.com', 'photos');
     var response = await http.get(url);
     print('Response status: ${response.statusCode}');

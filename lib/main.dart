@@ -30,8 +30,9 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Flutter Story App',
+        title: 'Story App',
         initialRoute: '/',
+        debugShowCheckedModeBanner: false,
         navigatorKey: RouterService().navigatorKey,
         supportedLocales: const [
           Locale('tr', ''), // Turkish, no country code

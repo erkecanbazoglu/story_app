@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/data/providers/videos.dart';
 import '../../data/providers/photos.dart';
 import 'first_page.dart';
 import '../widgets/photo_post_widget.dart';
@@ -25,6 +26,20 @@ class _HomePageState extends State<HomePage> {
   List<int> _postList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   final PhotosAPI _photosAPI = PhotosAPI();
+  final VideosAPI _videosAPI = VideosAPI();
+
+  void _getVideos() async {
+    print("new command");
+    await _videosAPI.getVideos();
+    // var temp = await _videosAPI.getVideos();
+    // print(temp);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getVideos();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -133,10 +148,13 @@ class _HomePageState extends State<HomePage> {
         //   await _photosAPI.getPhotos();
         // },
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => FirstPage()),
-          );
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => FirstPage()),
+          // );
+          print("new command");
+          final VideosAPI _videosAPI = VideosAPI();
+          _videosAPI.getVideos();
         },
         heroTag: "floating-action-btn",
         tooltip: 'Increment',
