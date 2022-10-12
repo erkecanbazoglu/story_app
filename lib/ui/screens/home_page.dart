@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:test_app/ui/screens/story_page2.dart';
+import '../../data/models/data.dart';
 import '../../data/providers/photos.dart';
 import 'others/first_page.dart';
 import '../widgets/photo_post_widget.dart';
@@ -10,19 +12,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // int _counter = 0;
-
-  // void _incrementCounter() {
-  //   setState(() {
-  //     _counter++;
-  //     _counter++;
-  //   });
-  // }
-  ScrollController _scrollController = ScrollController();
-  ScrollController _storyController = ScrollController();
+  final ScrollController _customScrollViewController = ScrollController();
+  final ScrollController _storyController = ScrollController();
   final key = GlobalKey();
   //Just a temp list with 10 items
-  List<int> _postList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  final List<int> _postList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
   final PhotosAPI _photosAPI = PhotosAPI();
 
@@ -78,35 +72,21 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      // body: Center(
-      //   child: Column(
-      //     mainAxisAlignment: MainAxisAlignment.center,
-      //     children: <Widget>[
-      //       const Text(
-      //         'You have pushed the button this many times:',
-      //       ),
-      //       Text(
-      //         '$_counter',
-      //         style: Theme.of(context).textTheme.headline4,
-      //       ),
-      //     ],
-      //   ),
-      // ),
       body: CustomScrollView(
-        physics: BouncingScrollPhysics(),
-        controller: _scrollController,
+        physics: const BouncingScrollPhysics(),
+        controller: _customScrollViewController,
         slivers: <Widget>[
           //Stories
           SliverToBoxAdapter(
-            child: Container(
+            child: SizedBox(
               height: 60,
               child: ListView.builder(
                 controller: _storyController,
                 scrollDirection: Axis.horizontal,
-                physics: BouncingScrollPhysics(),
+                physics: const BouncingScrollPhysics(),
                 itemCount: _postList.length,
                 itemBuilder: (context, index) {
-                  return Story(photo: _postList[index]);
+                  return storyAvatars(photo: _postList[index]);
                 },
               ),
             ),
@@ -123,26 +103,66 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      // body: Column(
-      //   children: [
-      //     PhotoPost(photo: 1),
-      //     PhotoPost(photo: 4),
-      //   ],
-      // ),
-      floatingActionButton: FloatingActionButton(
-        // onPressed: _incrementCounter,
-        // onPressed: () async {
-        //   await _photosAPI.getPhotos();
-        // },
-        heroTag: "floating-action-btn",
-        onPressed: () {
+    );
+  }
+}
+
+class storyAvatars extends StatelessWidget {
+  final int photo;
+
+  const storyAvatars({Key? key, required this.photo}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: GestureDetector(
+        onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => FirstPage()),
+            MaterialPageRoute(
+                builder: (context) => StoryPage2(
+                      stories: stories,
+                    )),
           );
         },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: Container(
+          decoration: const BoxDecoration(
+            // color: Colors.amber,
+            gradient: LinearGradient(
+              begin: Alignment.bottomLeft,
+              end: Alignment.topRight,
+              colors: [
+                Color(0xFEDA77FF),
+                Color(0x8134AFFF),
+              ],
+            ),
+            borderRadius: BorderRadius.all(
+              Radius.circular(40.0),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(2),
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(40.0),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(1),
+                child: Hero(
+                  tag: photo,
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundImage: AssetImage('assets/avatars/${photo}.jpg'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

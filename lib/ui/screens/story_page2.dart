@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dismissible_page/dismissible_page.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:test_app/ui/widgets/video_player_widget.dart';
 import 'package:video_player/video_player.dart';
@@ -25,9 +27,6 @@ class _StoryPage2State extends State<StoryPage2>
   late VideoPlayerController _videoController;
   late AnimationController _animationController;
   int _currentIndex = 0;
-  List<double> percentWatched = [];
-  Timer? timer;
-  int milliseconds = 5000;
   double? screenWidth;
   double? dx;
 
@@ -57,6 +56,9 @@ class _StoryPage2State extends State<StoryPage2>
                 }
               });
         break;
+      default:
+        _animationController.forward();
+        break;
     }
     if (shouldAnimate) {
       _pageController.animateToPage(_currentIndex,
@@ -65,52 +67,55 @@ class _StoryPage2State extends State<StoryPage2>
   }
 
   //Gesture Functions
-  void _onTapDown(TapDownDetails details) {
+  void _onLongPressDown(LongPressDownDetails details) {
     screenWidth = MediaQuery.of(context).size.width;
     dx = details.globalPosition.dx;
-    print(dx);
-    print(screenWidth);
   }
 
   void _onLongPressCancel() {
-    print(dx);
-    print(screenWidth);
-    if ((dx ?? 1) < (screenWidth ?? 400) / 3) {
-      setState(() {
-        if (_currentIndex > 0) {
-          percentWatched[_currentIndex] = 0;
-          percentWatched[_currentIndex - 1] = 0;
+    if (dx! < screenWidth! / 3) {
+      if (_currentIndex > 0) {
+        setState(() {
           _currentIndex--;
           _startStory(story: widget.stories[_currentIndex]);
-        } else {
-          percentWatched[_currentIndex] = 0;
-        }
-      });
+        });
+      } else {
+        setState(() {
+          _startStory(story: widget.stories[_currentIndex]);
+        });
+      }
     } else {
-      setState(() {
-        if (_currentIndex < widget.stories.length - 1) {
-          percentWatched[_currentIndex] = 1;
+      if (_currentIndex < widget.stories.length - 1) {
+        _animationController.stop();
+        _animationController.reset();
+        setState(() {
           _currentIndex++;
           _startStory(story: widget.stories[_currentIndex]);
-        } else {
-          percentWatched[_currentIndex] = 1;
-        }
-      });
+        });
+      } else {
+        ///Next Story
+        //Navigator.pop for now
+        Navigator.pop(context);
+      }
     }
   }
 
-  void _onLongPress(story) {
+  void _pauseStory(story) {
     if (story.media == MediaType.video) {
       if (_videoController.value.isPlaying) {
         _videoController.pause();
         _animationController.stop();
       }
+    } else {
+      _animationController.stop();
     }
   }
 
-  void _onLongPressEnd(story) {
+  void _continueStory(story) {
     if (story.media == MediaType.video) {
       _videoController.play();
+      _animationController.forward();
+    } else {
       _animationController.forward();
     }
   }
@@ -161,214 +166,228 @@ class _StoryPage2State extends State<StoryPage2>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.blueGrey[100],
-      body: Stack(
-        children: [
-          GestureDetector(
-            //get the click event
-            onTapDown: (details) => _onTapDown(details),
-            //pause the story
-            onLongPress: () => _onLongPress(widget.stories[_currentIndex]),
-            //next or previous story (continue onTapDown)
-            onLongPressCancel: () => _onLongPressCancel(),
-            //continue the story
-            onLongPressEnd: (_) =>
-                _onLongPressEnd(widget.stories[_currentIndex]),
-            child: PageView.builder(
-                controller: _pageController,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: widget.stories.length,
-                itemBuilder: (context, index) {
-                  final story = widget.stories[index];
-                  switch (story.media) {
-                    case MediaType.image:
-                      return CachedNetworkImage(
-                        imageUrl: story.url,
-                        fit: BoxFit.cover,
-                      );
-                    case MediaType.video:
-                      if (_videoController != null &&
-                          _videoController.value.isInitialized) {
-                        return VideoPlayerWidget(controller: _videoController);
+    return DismissiblePage(
+      onDismissed: () {
+        Navigator.of(context).pop();
+      },
+      onDragStart: () => _pauseStory(widget.stories[_currentIndex]),
+      onDragEnd: () => _continueStory(widget.stories[_currentIndex]),
+      backgroundColor: Colors.white,
+      direction: DismissiblePageDismissDirection.down,
+      isFullScreen: true,
+      child: Scaffold(
+        backgroundColor: Colors.blueGrey[100],
+        body: Stack(
+          children: [
+            GestureDetector(
+              //get the very first press event
+              onLongPressDown: (details) => _onLongPressDown(details),
+              //next or previous story (move as click event)
+              onLongPressCancel: () => _onLongPressCancel(),
+              //pause the story
+              onLongPress: () => _pauseStory(widget.stories[_currentIndex]),
+              //continue the story
+              onLongPressEnd: (_) =>
+                  _continueStory(widget.stories[_currentIndex]),
+              child: Hero(
+                tag: 1,
+                child: PageView.builder(
+                    controller: _pageController,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: widget.stories.length,
+                    itemBuilder: (context, index) {
+                      final story = widget.stories[index];
+                      switch (story.media) {
+                        case MediaType.image:
+                          return CachedNetworkImage(
+                            imageUrl: story.url,
+                            fit: BoxFit.cover,
+                          );
+                        case MediaType.video:
+                          if (_videoController != null &&
+                              _videoController.value.isInitialized) {
+                            return VideoPlayerWidget(
+                                controller: _videoController);
+                          }
+                          break;
                       }
-                      break;
-                  }
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }),
-          ),
-          SafeArea(
-            child: Column(
-              children: [
-                Row(
-                  children: widget.stories
-                      .asMap()
-                      .map((index, storyItem) {
-                        return MapEntry(
-                          index,
-                          AnimatedBar(
-                            animationController: _animationController,
-                            position: index,
-                            currentIndex: _currentIndex,
-                          ),
-                        );
-                      })
-                      .values
-                      .toList(),
-                ),
-                Expanded(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const CircleAvatar(
-                              radius: 16,
-                              backgroundImage:
-                                  AssetImage('assets/avatars/2.jpg'),
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }),
+              ),
+            ),
+            SafeArea(
+              child: Column(
+                children: [
+                  Row(
+                    children: widget.stories
+                        .asMap()
+                        .map((index, storyItem) {
+                          return MapEntry(
+                            index,
+                            AnimatedBar(
+                              animationController: _animationController,
+                              position: index,
+                              currentIndex: _currentIndex,
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  RichText(
-                                    text: const TextSpan(
-                                      style: TextStyle(color: Colors.black),
-                                      children: [
-                                        TextSpan(
-                                          text: "Erke Canbazoğlu",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: "  15h",
-                                          style: TextStyle(
-                                            color: Colors.white60,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
+                          );
+                        })
+                        .values
+                        .toList(),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 8),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const CircleAvatar(
+                                radius: 16,
+                                backgroundImage:
+                                    AssetImage('assets/avatars/2.jpg'),
                               ),
-                            ),
-                            Expanded(
-                              child: Align(
-                                alignment: Alignment.bottomRight,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
+                              Padding(
+                                padding: const EdgeInsets.only(left: 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(right: 12),
-                                      child: InkWell(
+                                    RichText(
+                                      text: const TextSpan(
+                                        style: TextStyle(color: Colors.black),
+                                        children: [
+                                          TextSpan(
+                                            text: "Erke Canbazoğlu",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: "  15h",
+                                            style: TextStyle(
+                                              color: Colors.white60,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      InkWell(
                                         child: const Icon(
                                             Icons.more_horiz_outlined),
                                         onTap: () {
                                           //Settings
                                         },
                                       ),
-                                    ),
-                                    InkWell(
-                                      child: const Icon(Icons.close),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Expanded(
-                              child: Align(
-                                alignment: Alignment.bottomLeft,
-                                child: SizedBox(
-                                  height: 40,
-                                  child: TextField(
-                                    maxLines: 1,
-                                    decoration: InputDecoration(
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.all(
-                                            Radius.circular(16.0)),
-                                        borderSide: BorderSide(
-                                          color: Colors.white70,
-                                          width: 1.0,
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.close,
                                         ),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
                                       ),
-                                      filled: true,
-                                      hintStyle: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Expanded(
+                                child: Align(
+                                  alignment: Alignment.bottomLeft,
+                                  child: SizedBox(
+                                    height: 40,
+                                    child: TextField(
+                                      maxLines: 1,
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(16.0)),
+                                          borderSide: BorderSide(
+                                            color: Colors.white70,
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        filled: true,
+                                        hintStyle: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                        ),
+                                        hintText: "Send message",
+                                        fillColor: Colors.transparent,
                                       ),
-                                      hintText: "Send message",
-                                      fillColor: Colors.transparent,
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20),
-                                  child: InkWell(
-                                    child: const Icon(
-                                      Icons.favorite_border,
-                                      color: Colors.white,
-                                    ),
-                                    onTap: () {
-                                      //Like
-                                    },
-                                  ),
-                                ),
-                                Transform.rotate(
-                                  angle: -math.pi / 7,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20),
                                     child: InkWell(
                                       child: const Icon(
-                                        Icons.send_outlined,
+                                        Icons.favorite_border,
                                         color: Colors.white,
                                       ),
                                       onTap: () {
-                                        //Send the post
+                                        //Like
                                       },
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
+                                  Transform.rotate(
+                                    angle: -math.pi / 7,
+                                    child: Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 8.0),
+                                      child: InkWell(
+                                        child: const Icon(
+                                          Icons.send_outlined,
+                                          color: Colors.white,
+                                        ),
+                                        onTap: () {
+                                          //Send the post
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
