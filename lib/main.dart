@@ -2,8 +2,10 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:test_app/logic/bloc/internet_bloc.dart';
+import 'package:test_app/logic/cubit/internet_cubit.dart';
 import 'package:test_app/ui/services/router_service.dart';
+import 'logic/bloc/stories_bloc.dart';
+import 'logic/bloc/user_bloc.dart';
 import 'ui/screens/welcome_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -25,6 +27,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider<StoriesBloc>(
+          create: (context) => StoriesBloc(),
+        ),
+        BlocProvider<UserBloc>(
+          create: (context) => UserBloc(),
+        ),
         BlocProvider<InternetCubit>(
           create: (context) => InternetCubit(connectivity: connectivity),
         ),

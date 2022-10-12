@@ -12,4 +12,13 @@ class User {
     required this.email,
     required this.profileImage,
   });
+
+  static const User empty = User(
+    id: 0,
+    name: "John Wick",
+    username: "johnwick",
+    email: "johnwick@gmail.com",
+    profileImage:
+        "https://i4.hurimg.com/i/hurriyet/75/750x422/600965400f25443f0406f3ab.jpg",
+  );
 }
