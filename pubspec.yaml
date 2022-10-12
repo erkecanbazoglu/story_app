@@ -10,6 +10,10 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   http: ^0.13.5
+  video_player: ^2.4.7
+  cached_network_image: ^3.1.0
+  percent_indicator: ^3.0.1
+  dismissible_page: ^0.7.3
   bloc: ^8.1.0
   flutter_bloc: ^8.1.1
   connectivity_plus: ^2.3.9
@@ -31,9 +35,10 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - images/avatars/
-    - images/posts/
-    - images/
+    - assets/avatars/
+    - assets/posts/
+    - assets/stories/
+    - assets/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

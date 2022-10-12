@@ -38,7 +38,7 @@ class _PhotoPostState extends State<PhotoPost> {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundImage: AssetImage('images/avatars/${photo}.jpg'),
+                backgroundImage: AssetImage('assets/avatars/${photo}.jpg'),
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 12),
@@ -82,7 +82,7 @@ class _PhotoPostState extends State<PhotoPost> {
           // height: MediaQuery.of(context).size.height * 0.35,
           width: double.infinity,
           child: Image.asset(
-            'images/posts/${photo}.jpg',
+            'assets/posts/${photo}.jpg',
             fit: BoxFit.cover,
           ),
         ),
@@ -151,7 +151,7 @@ class _PhotoPostState extends State<PhotoPost> {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: RichText(
                   text: const TextSpan(
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                     children: [
                       TextSpan(
                         text: "User name",
@@ -171,7 +171,7 @@ class _PhotoPostState extends State<PhotoPost> {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
                   "View all ${random(2, 20)} comments",
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.grey,
                   ),
                 ),
