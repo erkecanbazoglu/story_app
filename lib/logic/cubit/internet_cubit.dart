@@ -1,11 +1,9 @@
 import 'dart:async';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 
-part 'internet_state.dart';
+part '../cubit/internet_state.dart';
 
 class InternetCubit extends Cubit<InternetState> {
   final Connectivity connectivity;

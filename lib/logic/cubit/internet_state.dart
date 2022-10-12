@@ -1,4 +1,4 @@
-part of 'internet_bloc.dart';
+part of '../cubit/internet_cubit.dart';
 
 enum ConnectionType {
   Wifi,
