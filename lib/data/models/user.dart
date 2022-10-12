@@ -1,22 +1,24 @@
-import 'package:test_app/data/models/story.dart';
-
-enum MediaType {
-  image,
-  video,
-}
-
-class Story {
+class User {
   final int id;
-  final String url;
-  final MediaType media;
-  final Duration duration;
-  final User user;
+  final String name;
+  final String username;
+  final String email;
+  final String profileImage;
 
-  const Story({
+  const User({
     required this.id,
-    required this.url,
-    required this.media,
-    required this.duration,
-    required this.user,
+    required this.name,
+    required this.username,
+    required this.email,
+    required this.profileImage,
   });
+
+  static const User empty = User(
+    id: 0,
+    name: "John Wick",
+    username: "johnwick",
+    email: "johnwick@gmail.com",
+    profileImage:
+        "https://i4.hurimg.com/i/hurriyet/75/750x422/600965400f25443f0406f3ab.jpg",
+  );
 }

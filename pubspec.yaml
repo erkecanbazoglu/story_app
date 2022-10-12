@@ -14,13 +14,23 @@ dependencies:
   cached_network_image: ^3.1.0
   percent_indicator: ^3.0.1
   dismissible_page: ^0.7.3
+  bloc: ^8.1.0
+  flutter_bloc: ^8.1.1
+  connectivity_plus: ^2.3.9
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.17.0
+  equatable: ^2.0.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^1.0.0
+  test: ^1.19.0
+  bloc_test: ^9.1.0
 
 flutter:
+  generate: true
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:

@@ -1,17 +1,33 @@
 import 'package:flutter/foundation.dart';
+import 'user.dart';
 
-class User {
+class Story {
   final int id;
-  final String name;
-  final String username;
-  final String email;
-  final String profileImage;
+  final User user;
+  final List<StoryContent> userStories;
 
-  const User({
+  const Story({
     required this.id,
-    required this.name,
-    required this.username,
-    required this.email,
-    required this.profileImage,
+    required this.user,
+    required this.userStories,
+  });
+}
+
+enum MediaType {
+  image,
+  video,
+}
+
+class StoryContent {
+  final int id;
+  final String url;
+  final MediaType media;
+  final Duration duration;
+
+  const StoryContent({
+    required this.id,
+    required this.url,
+    required this.media,
+    required this.duration,
   });
 }

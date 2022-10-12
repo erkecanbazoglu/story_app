@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PhotoPost extends StatefulWidget {
   const PhotoPost({required this.photo});
@@ -43,8 +44,9 @@ class _PhotoPostState extends State<PhotoPost> {
                 padding: const EdgeInsets.only(left: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  children: const [
                     Text(
+                      // AppLocalizations.of(context)!.helloWorld,
                       "Erke Canbazoğlu",
                       style: TextStyle(
                         fontSize: 12,
