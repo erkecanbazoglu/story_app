@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test_app/data/providers/videos.dart';
 import '../../data/providers/photos.dart';
+import '../../data/repos/story_repo.dart';
 import 'first_page.dart';
 import '../widgets/photo_post_widget.dart';
 import '../widgets/story_widget.dart';
@@ -25,20 +26,16 @@ class _HomePageState extends State<HomePage> {
   //Just a temp list with 10 items
   List<int> _postList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-  final PhotosAPI _photosAPI = PhotosAPI();
-  final VideosAPI _videosAPI = VideosAPI();
+  final StoryRepo _storyRepo = StoryRepo();
 
-  void _getVideos() async {
-    print("new command");
-    await _videosAPI.getVideos();
-    // var temp = await _videosAPI.getVideos();
-    // print(temp);
+  void testFunction() async {
+    _storyRepo.prepareStoryContents();
   }
 
   @override
   void initState() {
     super.initState();
-    _getVideos();
+    testFunction();
   }
 
   @override
