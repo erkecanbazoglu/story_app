@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:test_app/logic/bloc/internet_bloc.dart';
 
 class FirstPage extends StatefulWidget {
   @override
@@ -19,9 +21,32 @@ class _FirstPageState extends State<FirstPage> {
             const Text(
               'You have pushed the button this many times:',
             ),
-            Text(
-              "1",
-              style: Theme.of(context).textTheme.headline4,
+            // Text(
+            //   "1",
+            //   style: Theme.of(context).textTheme.headline4,
+            // ),
+            BlocBuilder<InternetCubit, InternetState>(
+              builder: (context, state) {
+                if (state is InternetConnected &&
+                    state.connectionType == ConnectionType.Wifi) {
+                  return Text(
+                    "Wifi",
+                    style: Theme.of(context).textTheme.headline4,
+                  );
+                } else if (state is InternetConnected &&
+                    state.connectionType == ConnectionType.Mobile) {
+                  return Text(
+                    "Mobile",
+                    style: Theme.of(context).textTheme.headline4,
+                  );
+                } else if (state is InternetDisconnected) {
+                  return Text(
+                    "No Internet",
+                    style: Theme.of(context).textTheme.headline4,
+                  );
+                }
+                return const CircularProgressIndicator();
+              },
             ),
           ],
         ),
