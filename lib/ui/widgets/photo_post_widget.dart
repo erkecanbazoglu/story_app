@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PhotoPost extends StatefulWidget {
   const PhotoPost({required this.photo});
@@ -43,8 +44,9 @@ class _PhotoPostState extends State<PhotoPost> {
                 padding: const EdgeInsets.only(left: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  children: const [
                     Text(
+                      // AppLocalizations.of(context)!.helloWorld,
                       "Erke Canbazoğlu",
                       style: TextStyle(
                         fontSize: 12,
@@ -102,7 +104,7 @@ class _PhotoPostState extends State<PhotoPost> {
                         //Like
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 20,
                     ),
                     InkWell(
@@ -111,7 +113,7 @@ class _PhotoPostState extends State<PhotoPost> {
                         //Comment
                       },
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 20,
                     ),
                     Transform.rotate(
@@ -148,12 +150,12 @@ class _PhotoPostState extends State<PhotoPost> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: RichText(
-                  text: TextSpan(
-                    style: const TextStyle(color: Colors.black),
+                  text: const TextSpan(
+                    style: TextStyle(color: Colors.black),
                     children: [
                       TextSpan(
                         text: "User name",
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -169,7 +171,7 @@ class _PhotoPostState extends State<PhotoPost> {
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
                   "View all ${random(2, 20)} comments",
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.grey,
                   ),
                 ),

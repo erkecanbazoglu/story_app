@@ -13,6 +13,9 @@ dependencies:
   bloc: ^8.1.0
   flutter_bloc: ^8.1.1
   connectivity_plus: ^2.3.9
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:
@@ -22,6 +25,7 @@ dev_dependencies:
   bloc_test: ^9.1.0
 
 flutter:
+  generate: true
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
