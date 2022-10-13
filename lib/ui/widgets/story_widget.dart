@@ -1,27 +1,35 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+
 import '../../data/models/story.dart';
-import '../screens/story_page.dart';
-import '../../../data/models/data.dart';
-import '../screens/story_page2.dart';
 
-class StoryWidget extends StatelessWidget {
+class StoryWidget extends StatefulWidget {
   final Story story;
+  final VoidCallback onStoryTap;
 
-  const StoryWidget({Key? key, required this.story}) : super(key: key);
+  const StoryWidget({
+    Key? key,
+    required this.story,
+    required this.onStoryTap,
+  }) : super(key: key);
+
+  @override
+  State<StoryWidget> createState() => _StoryWidgetState();
+}
+
+class _StoryWidgetState extends State<StoryWidget> {
+  late Story story;
+
+  @override
+  void initState() {
+    super.initState();
+    story = widget.story;
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => StoryPage2(
-                    story: story,
-                  )),
-        );
-      },
+      onTap: widget.onStoryTap,
       child: CachedNetworkImage(
         imageUrl: story.user.profileImage,
         imageBuilder: (context, imageProvider) => Container(
@@ -51,6 +59,7 @@ class StoryWidget extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(2),
                   child: Hero(
+                    ///Hero for the specified user tag
                     tag: story.id,
                     child: Center(
                       child: Container(

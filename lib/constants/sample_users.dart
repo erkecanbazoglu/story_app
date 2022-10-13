@@ -1,4 +1,4 @@
-import 'package:test_app/data/models/user.dart';
+import '../data/models/user.dart';
 
 const List<User> users = [
   User(

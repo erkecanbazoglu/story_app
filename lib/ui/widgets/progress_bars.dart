@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:test_app/ui/widgets/progress_bar.dart';
+import 'progress_bar.dart';
 
 class ProgressBars extends StatelessWidget {
   List<double> percentWatched;

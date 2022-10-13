@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:test_app/ui/screens/story_page2.dart';
-import 'package:test_app/ui/widgets/story_widget.dart';
+import 'story_page.dart';
+import '../widgets/story_widget.dart';
 import '../../data/models/data.dart';
 import '../../data/providers/photos.dart';
 import 'others/first_page.dart';
@@ -115,7 +115,20 @@ class _HomePageState extends State<HomePage> {
                           physics: const BouncingScrollPhysics(),
                           itemCount: stories.length,
                           itemBuilder: (context, index) {
-                            return StoryWidget(story: stories[index]);
+                            return StoryWidget(
+                              story: stories[index],
+                              onStoryTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => StoryPage2(
+                                      stories: stories,
+                                      storyIndex: index,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
                           },
                         ),
                       );

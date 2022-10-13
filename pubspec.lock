@@ -258,6 +258,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.3.0"
+  flutter_carousel_slider:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: f545d70d0a5c0847449a5527047831b33f1b4f87
+      url: "https://github.com/erkecanbazoglu/FlutterCarouselSlider"
+    source: git
+    version: "1.0.9"
   flutter_lints:
     dependency: "direct dev"
     description:

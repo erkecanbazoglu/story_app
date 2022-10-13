@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:test_app/logic/cubit/internet_cubit.dart';
+
+import '../../../logic/cubit/internet_cubit.dart';
 
 class FirstPage extends StatefulWidget {
   @override

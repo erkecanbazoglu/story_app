@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:test_app/ui/screens/others/fifth_page.dart';
-import 'package:test_app/ui/screens/others/first_page.dart';
-import 'package:test_app/ui/screens/others/fourth_page.dart';
-import 'package:test_app/ui/screens/home_page.dart';
-import 'package:test_app/ui/screens/others/second_page.dart';
-import 'package:test_app/ui/screens/others/third_page.dart';
+import 'others/fifth_page.dart';
+import 'others/first_page.dart';
+import 'others/fourth_page.dart';
+import 'home_page.dart';
+import 'others/second_page.dart';
+import 'others/third_page.dart';
 import '../../data/providers/photos.dart';
 
 class WelcomePage extends StatefulWidget {

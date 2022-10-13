@@ -22,9 +22,9 @@ class StoryRepo {
       photoStoryContent.add(content);
     }
 
-    ///Also  some images from static links, not to push API limits:) Default: 10 (max: 30)
+    ///Also  some images from static links, not to push API limits:) Default: 15 (max: 30)
     List<dynamic> staticPhotoList =
-        _photosAPI.getPhotosFromPexelsStatic(amount: 10);
+        _photosAPI.getPhotosFromPexelsStatic(amount: 15);
 
     for (int i = 0; i < staticPhotoList.length; i++) {
       StoryContent content =
@@ -164,8 +164,10 @@ class StoryRepo {
     ///Mixing the photos and videos lists
     List<StoryContent> mixedStoryContents = mixTwoLists(photoList, videoList);
 
-    ///Distributing Story Contents randomly to Users
+    ///Getting Users: Default: 10 (max: 10)
     List<User> userList = getUsers(amount: 10);
+
+    ///Distributing Story Contents randomly to Users
     List<dynamic> userStoryContents =
         distributeStoryContents(userList, mixedStoryContents);
 

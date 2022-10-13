@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
-
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class ProgressBar extends StatelessWidget {
