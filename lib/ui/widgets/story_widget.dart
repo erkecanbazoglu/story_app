@@ -1,69 +1,69 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../data/models/story.dart';
 import '../screens/story_page.dart';
 import '../../../data/models/data.dart';
 import '../screens/story_page2.dart';
 
-class Story extends StatefulWidget {
-  const Story({required this.photo});
+class StoryWidget extends StatelessWidget {
+  final Story story;
 
-  final int photo;
-
-  @override
-  State<Story> createState() => _StoryState();
-}
-
-class _StoryState extends State<Story> {
-  String? photo;
-
-  @override
-  void initState() {
-    super.initState();
-    photo = widget.photo.toString();
-  }
+  const StoryWidget({Key? key, required this.story}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => StoryPage2(
-                      stories: stories,
-                    )),
-          );
-        },
-        child: Container(
-          decoration: const BoxDecoration(
-            // color: Colors.amber,
-            gradient: LinearGradient(
-              begin: Alignment.bottomLeft,
-              end: Alignment.topRight,
-              colors: [
-                Color(0xFEDA77FF),
-                Color(0x8134AFFF),
-              ],
-            ),
-            borderRadius: BorderRadius.all(
-              Radius.circular(40.0),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(2),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(40.0),
-                ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => StoryPage2(
+                    story: story,
+                  )),
+        );
+      },
+      child: CachedNetworkImage(
+        imageUrl: story.user.profileImage,
+        imageBuilder: (context, imageProvider) => Container(
+          width: 70,
+          height: 70,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Container(
+            decoration: const BoxDecoration(
+              // color: Colors.amber,
+              gradient: LinearGradient(
+                begin: Alignment.bottomLeft,
+                end: Alignment.topRight,
+                colors: [
+                  Color(0xFEDA77FF),
+                  Color(0x8134AFFF),
+                ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(1),
-                child: CircleAvatar(
-                  radius: 24,
-                  backgroundImage: AssetImage('assets/avatars/${photo}.jpg'),
+              shape: BoxShape.circle,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(2),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(2),
+                  child: Hero(
+                    tag: story.id,
+                    child: Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),

@@ -10,15 +10,29 @@ class StoryRepo {
 
   ///Getting the photos from JSON Placeholder
   Future<List<StoryContent>> getPhotos() async {
-    ///Number of photo we get from the API
-    ///Default: 50 (max: 5000)
+    ///Number of photo we get from the API: Default: 50 (max: 5000)
+    // List<dynamic> photoList = await _photosAPI.getPhotosFromJsonPlaceholder(amount: 50);
 
-    List<dynamic> photoList = await _photosAPI.getPhotos(amount: 50);
+    ///Number of photo we get from the API: Default: 10 (max: 80)
+    List<dynamic> photoList = await _photosAPI.getVideosFromPexels(amount: 5);
+
     List<StoryContent> photoStoryContent = [];
     for (int i = 0; i < photoList.length; i++) {
       StoryContent content = getStoryContentFromPhoto(photoList[i]);
       photoStoryContent.add(content);
     }
+
+    ///Also  some images from static links, not to push API limits:) Default: 10 (max: 30)
+    List<dynamic> staticPhotoList =
+        _photosAPI.getPhotosFromPexelsStatic(amount: 10);
+
+    for (int i = 0; i < staticPhotoList.length; i++) {
+      StoryContent content =
+          getStoryContentFromStaticUrl(staticPhotoList[i], MediaType.image);
+      photoStoryContent.add(content);
+    }
+    photoStoryContent.shuffle();
+
     return photoStoryContent;
   }
 
@@ -27,8 +41,21 @@ class StoryRepo {
     StoryContent storyContent;
     storyContent = StoryContent(
       id: photo['id'],
-      url: photo['url'],
+      url: photo['src']['large'] ?? photo['src']['original'],
       media: MediaType.image,
+      duration: const Duration(seconds: 5),
+    );
+    return storyContent;
+  }
+
+  ///Mapping static urls to the Story Content
+  StoryContent getStoryContentFromStaticUrl(String url, MediaType mediaType) {
+    StoryContent storyContent;
+    int id = math.Random().nextInt(1000000);
+    storyContent = StoryContent(
+      id: id,
+      url: url,
+      media: mediaType,
       duration: const Duration(seconds: 5),
     );
     return storyContent;
@@ -38,10 +65,9 @@ class StoryRepo {
 
   ///Getting the videos from Pexels API
   Future<List<StoryContent>> getVideos() async {
-    ///Number of video we get from the API
-    ///Default: 10 (max: 80 - monthly 20.000)
+    ///Number of video we get from the API: Default: 10 (max: 80)
+    List<dynamic> videoList = await _videosAPI.getVideosFromPexels(amount: 3);
 
-    List<dynamic> videoList = await _videosAPI.getVideos(amount: 3);
     List<StoryContent> videoStoryContent = [];
     for (int i = 0; i < videoList.length; i++) {
       StoryContent content = getStoryContentFromVideo(videoList[i]);
@@ -55,24 +81,24 @@ class StoryRepo {
     StoryContent storyContent;
     storyContent = StoryContent(
       id: video['id'],
-      url: video['video_files'][0]['link'],
+      url: video['video_files'][4]['link'] ?? video['video_files'][0]['link'],
       media: MediaType.video,
       duration: const Duration(seconds: 0),
     );
     return storyContent;
   }
 
-  ///Get users data (amount: 10)
-  List<User> getUsers() {
+  ///Get users data: Default: 10 (max: 10)
+  List<User> getUsers({int amount = 10}) {
     List<User> users = user_samples.users;
-    return users;
+    return users.sublist(0, amount);
   }
 
-  ///Mixing the Story Contents
-  List<StoryContent> mixStoryContents(photos, videos) {
-    List<StoryContent> mixedStoryContent = List.from(photos)..addAll(videos);
-    mixedStoryContent.shuffle();
-    return mixedStoryContent;
+  ///Mixing two lists into one
+  List<StoryContent> mixTwoLists(list1, list2) {
+    List<StoryContent> mixedList = List.from(list1)..addAll(list2);
+    mixedList.shuffle();
+    return mixedList;
   }
 
   ///Distributing the Story Contents to Users
@@ -109,6 +135,11 @@ class StoryRepo {
     List<Story> stories = [];
 
     for (int i = 0; i < userStoryContents.length; i++) {
+      ///No Story for the specified user
+      if (userStoryContents[i].isEmpty) {
+        continue;
+      }
+
       ///Random story id between 0-999.999
       int id = math.Random().nextInt(1000000);
       Story story = Story(
@@ -131,11 +162,10 @@ class StoryRepo {
     List<StoryContent> videoList = await getVideos();
 
     ///Mixing the photos and videos lists
-    List<StoryContent> mixedStoryContents =
-        mixStoryContents(photoList, videoList);
+    List<StoryContent> mixedStoryContents = mixTwoLists(photoList, videoList);
 
     ///Distributing Story Contents randomly to Users
-    List<User> userList = getUsers();
+    List<User> userList = getUsers(amount: 10);
     List<dynamic> userStoryContents =
         distributeStoryContents(userList, mixedStoryContents);
 

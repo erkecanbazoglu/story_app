@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../screens/fifth_page.dart';
-import '../screens/first_page.dart';
-import '../screens/fourth_page.dart';
+import '../screens/others/fifth_page.dart';
+import '../screens/others/first_page.dart';
+import '../screens/others/fourth_page.dart';
 import '../screens/home_page.dart';
-import '../screens/second_page.dart';
-import '../screens/third_page.dart';
+import '../screens/others/second_page.dart';
+import '../screens/others/third_page.dart';
 
 class RouterService {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();

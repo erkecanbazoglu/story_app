@@ -13,10 +13,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  runApp(const MyApp());
-  runApp(MyApp(
-    connectivity: Connectivity(),
-  ));
+  runApp(
+    MyApp(connectivity: Connectivity()),
+  );
 }
 
 class MyApp extends StatelessWidget {

@@ -1,12 +1,15 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:test_app/ui/screens/story_page2.dart';
+import 'package:test_app/ui/widgets/story_widget.dart';
 import '../../data/models/data.dart';
 import '../../data/providers/photos.dart';
 import 'others/first_page.dart';
+import '../../data/models/story.dart';
 import '../../data/repos/story_repo.dart';
-import 'first_page.dart';
+import 'others/first_page.dart';
 import '../widgets/photo_post_widget.dart';
-import '../widgets/story_widget.dart';
+import 'dart:async';
 
 class HomePage extends StatefulWidget {
   @override
@@ -19,17 +22,23 @@ class _HomePageState extends State<HomePage> {
   final key = GlobalKey();
   //Just a temp list with 10 items
   final List<int> _postList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  List<Story> stories = [];
 
   final StoryRepo _storyRepo = StoryRepo();
 
-  void testFunction() async {
-    _storyRepo.prepareStoryContents();
+  // void testFunction() async {
+  //   stories = await _storyRepo.prepareStoryContents();
+  // }
+
+  Future<List<Story>> generateStories() async {
+    stories = await _storyRepo.prepareStoryContents();
+    return Future.value(stories);
   }
 
   @override
   void initState() {
     super.initState();
-    testFunction();
+    // testFunction();
   }
 
   @override
@@ -90,17 +99,42 @@ class _HomePageState extends State<HomePage> {
         slivers: <Widget>[
           //Stories
           SliverToBoxAdapter(
-            child: SizedBox(
-              height: 60,
-              child: ListView.builder(
-                controller: _storyController,
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                itemCount: _postList.length,
-                itemBuilder: (context, index) {
-                  return storyAvatars(photo: _postList[index]);
-                },
-              ),
+            child: Column(
+              children: [
+                FutureBuilder<List<Story>>(
+                  future: generateStories(),
+                  builder: (BuildContext context,
+                      AsyncSnapshot<List<Story>> snapshot) {
+                    List<Widget> children;
+                    if (snapshot.hasData) {
+                      return SizedBox(
+                        height: 70,
+                        child: ListView.builder(
+                          controller: _storyController,
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: stories.length,
+                          itemBuilder: (context, index) {
+                            return StoryWidget(story: stories[index]);
+                          },
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 20,
+                      );
+                    } else {
+                      return const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                  },
+                ),
+              ],
             ),
           ),
           //Posts
@@ -114,67 +148,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class storyAvatars extends StatelessWidget {
-  final int photo;
-
-  const storyAvatars({Key? key, required this.photo}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => StoryPage2(
-                      stories: stories,
-                    )),
-          );
-        },
-        child: Container(
-          decoration: const BoxDecoration(
-            // color: Colors.amber,
-            gradient: LinearGradient(
-              begin: Alignment.bottomLeft,
-              end: Alignment.topRight,
-              colors: [
-                Color(0xFEDA77FF),
-                Color(0x8134AFFF),
-              ],
-            ),
-            borderRadius: BorderRadius.all(
-              Radius.circular(40.0),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(2),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(40.0),
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(1),
-                child: Hero(
-                  tag: photo,
-                  child: CircleAvatar(
-                    radius: 24,
-                    backgroundImage: AssetImage('assets/avatars/${photo}.jpg'),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

@@ -8,14 +8,16 @@ import 'package:test_app/ui/widgets/video_player_widget.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:math' as math;
 import 'dart:async';
+import '../../constants/constants.dart';
+import '../../data/models/story.dart';
 import '../../data/models/user.dart';
 import '../widgets/progress_bars.dart';
 import '../widgets/animated_bar.dart';
 
 class StoryPage2 extends StatefulWidget {
-  final List<Story> stories;
+  final Story story;
 
-  const StoryPage2({Key? key, required this.stories}) : super(key: key);
+  const StoryPage2({Key? key, required this.story}) : super(key: key);
 
   @override
   State<StoryPage2> createState() => _StoryPage2State();
@@ -30,21 +32,21 @@ class _StoryPage2State extends State<StoryPage2>
   double? screenWidth;
   double? dx;
 
-  void _startStory({Story? story, bool shouldAnimate = true}) {
+  void _startStory({StoryContent? storyContent, bool shouldAnimate = true}) {
     //Stop the animation and reset the animation bar
     _animationController.stop();
     _animationController.reset();
 
-    switch (story?.media) {
+    switch (storyContent?.media) {
       case MediaType.image:
         //Set the image duration and start the animation
-        _animationController.duration = story?.duration;
+        _animationController.duration = storyContent?.duration;
         _animationController.forward();
         break;
       case MediaType.video:
         //Initialize the video controller
         _videoController =
-            VideoPlayerController.network(story?.url ?? "deafult")
+            VideoPlayerController.network(storyContent?.url ?? "deafult")
               ..initialize().then((_) {
                 setState(() {});
                 if (_videoController.value.isInitialized) {
@@ -77,20 +79,20 @@ class _StoryPage2State extends State<StoryPage2>
       if (_currentIndex > 0) {
         setState(() {
           _currentIndex--;
-          _startStory(story: widget.stories[_currentIndex]);
+          _startStory(storyContent: widget.story.userStories[_currentIndex]);
         });
       } else {
         setState(() {
-          _startStory(story: widget.stories[_currentIndex]);
+          _startStory(storyContent: widget.story.userStories[_currentIndex]);
         });
       }
     } else {
-      if (_currentIndex < widget.stories.length - 1) {
+      if (_currentIndex < widget.story.userStories.length - 1) {
         _animationController.stop();
         _animationController.reset();
         setState(() {
           _currentIndex++;
-          _startStory(story: widget.stories[_currentIndex]);
+          _startStory(storyContent: widget.story.userStories[_currentIndex]);
         });
       } else {
         ///Next Story
@@ -120,17 +122,24 @@ class _StoryPage2State extends State<StoryPage2>
     }
   }
 
-  void initVideoController(List<Story> stories) {
+  void initVideoController(List<StoryContent> stories) {
     //This function detects the first video story
-    for (int i = 0; i < stories.length; i++) {
-      if (stories[i].media == MediaType.video) {
-        _videoController = VideoPlayerController.network(stories[i].url)
-          ..initialize().then((_) {
-            setState(() {});
-          });
-        break;
-      }
-    }
+    // for (int i = 0; i < stories.length; i++) {
+    //   if (stories[i].media == MediaType.video) {
+    //     _videoController =
+    //
+    //           _videoController = VideoPlayerController.asset(stories[i].url)
+    //           ..initialize().then((_) {
+    //             setState(() {});
+    //           });
+    //     break;
+    //   }
+    // }
+    _videoController = VideoPlayerController.network(
+        "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4")
+      ..initialize().then((_) {
+        setState(() {});
+      });
   }
 
   @override
@@ -140,22 +149,22 @@ class _StoryPage2State extends State<StoryPage2>
     _animationController = AnimationController(vsync: this);
 
     //The very first story
-    final Story initialStory = widget.stories[0];
+    final StoryContent initialStory = widget.story.userStories[0];
 
     //To make video controller initialized
-    initVideoController(widget.stories);
+    initVideoController(widget.story.userStories);
 
     //Starting the stories
-    _startStory(story: initialStory, shouldAnimate: false);
+    _startStory(storyContent: initialStory, shouldAnimate: false);
 
     _animationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         _animationController.stop();
         _animationController.reset();
         setState(() {
-          if (_currentIndex + 1 < widget.stories.length) {
+          if (_currentIndex + 1 < widget.story.userStories.length) {
             _currentIndex++;
-            _startStory(story: widget.stories[_currentIndex]);
+            _startStory(storyContent: widget.story.userStories[_currentIndex]);
           } else {
             Navigator.pop(context);
           }
@@ -170,8 +179,8 @@ class _StoryPage2State extends State<StoryPage2>
       onDismissed: () {
         Navigator.of(context).pop();
       },
-      onDragStart: () => _pauseStory(widget.stories[_currentIndex]),
-      onDragEnd: () => _continueStory(widget.stories[_currentIndex]),
+      onDragStart: () => _pauseStory(widget.story.userStories[_currentIndex]),
+      onDragEnd: () => _continueStory(widget.story.userStories[_currentIndex]),
       backgroundColor: Colors.white,
       direction: DismissiblePageDismissDirection.down,
       isFullScreen: true,
@@ -185,18 +194,19 @@ class _StoryPage2State extends State<StoryPage2>
               //next or previous story (move as click event)
               onLongPressCancel: () => _onLongPressCancel(),
               //pause the story
-              onLongPress: () => _pauseStory(widget.stories[_currentIndex]),
+              onLongPress: () =>
+                  _pauseStory(widget.story.userStories[_currentIndex]),
               //continue the story
               onLongPressEnd: (_) =>
-                  _continueStory(widget.stories[_currentIndex]),
+                  _continueStory(widget.story.userStories[_currentIndex]),
               child: Hero(
-                tag: 1,
+                tag: widget.story.id,
                 child: PageView.builder(
                     controller: _pageController,
                     physics: NeverScrollableScrollPhysics(),
-                    itemCount: widget.stories.length,
+                    itemCount: widget.story.userStories.length,
                     itemBuilder: (context, index) {
-                      final story = widget.stories[index];
+                      final story = widget.story.userStories[index];
                       switch (story.media) {
                         case MediaType.image:
                           return CachedNetworkImage(
@@ -221,7 +231,7 @@ class _StoryPage2State extends State<StoryPage2>
               child: Column(
                 children: [
                   Row(
-                    children: widget.stories
+                    children: widget.story.userStories
                         .asMap()
                         .map((index, storyItem) {
                           return MapEntry(

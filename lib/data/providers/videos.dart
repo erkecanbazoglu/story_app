@@ -3,21 +3,23 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 
+import '../../constants/constants.dart';
+
 class VideosAPI {
-  Future<List<dynamic>> getVideos({int amount = 10}) async {
+  ///Pexels Video API
+  Future<List<dynamic>> getVideosFromPexels({int amount = 10}) async {
     // Request to website below:
     // "https://www.pexels.com/videos/search/"
 
-    const String API_KEY =
-        '563492ad6f91700001000001f6d98ef7e7fd4a2db20b78c06e74ac7d';
+    const String apiKey = API_KEY;
     final String videoAmount = amount.toString();
     const String endpointUrl = 'https://api.pexels.com/videos/search';
     final String params =
-        'query=nature&orientation=portrait&per_page=' + videoAmount;
+        'query=all&orientation=portrait&size=small&per_page=' + videoAmount;
     final String url = endpointUrl + '?' + params;
 
     final response = await http.get(Uri.parse(url), headers: {
-      'Authorization': API_KEY,
+      'Authorization': apiKey,
     });
 
     print('Response status: ${response.statusCode}');
