@@ -7,7 +7,7 @@ import '../../constants/constants.dart';
 
 class VideosAPI {
   ///Pexels Video API
-  Future<List<dynamic>> getVideosFromPexels({int amount = 10}) async {
+  Future<List<dynamic>> getVideosFromPexels({required int amount}) async {
     // Request to website below:
     // "https://www.pexels.com/videos/search/"
 

@@ -6,7 +6,8 @@ import '../../constants/sample_images.dart';
 
 class PhotosAPI {
   ///Later not used due to image quality
-  Future<List<dynamic>> getPhotosFromJsonPlaceholder({int? amount = 50}) async {
+  Future<List<dynamic>> getPhotosFromJsonPlaceholder(
+      {required int amount}) async {
     // Request to website below:
     // "https://jsonplaceholder.typicode.com/photos/"
 
@@ -18,7 +19,7 @@ class PhotosAPI {
   }
 
   ///Pexels Image API
-  Future<List<dynamic>> getVideosFromPexels({int amount = 10}) async {
+  Future<List<dynamic>> getVideosFromPexels({required int amount}) async {
     // Request to website below:
     // "https://www.pexels.com/v1/search/"
 
@@ -39,7 +40,7 @@ class PhotosAPI {
   }
 
   ///Pexels images from static urls
-  List<dynamic> getPhotosFromPexelsStatic({int? amount = 30}) {
+  List<dynamic> getPhotosFromPexelsStatic({required int amount}) {
     List<String> pexelImages = photoList;
     return pexelImages.sublist(0, amount);
   }

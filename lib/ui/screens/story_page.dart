@@ -8,6 +8,7 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_carousel_slider/carousel_slider.dart';
 import 'package:flutter_carousel_slider/carousel_slider_indicators.dart';
 import 'package:flutter_carousel_slider/carousel_slider_transforms.dart';
+import 'package:test_app/services/shared_preferences.dart';
 import '../widgets/video_player_widget.dart';
 import 'package:video_player/video_player.dart';
 import 'dart:math' as math;
@@ -62,14 +63,16 @@ class _StoryPage2State extends State<StoryPage2>
     _animationController.stop();
     _animationController.reset();
 
-    switch (storyContent?.media) {
+    SharedPreferencesService.setStoryContentSeen(storyContent!.id);
+
+    switch (storyContent.media) {
       case MediaType.image:
         //Set the image duration and start the animation
-        _animationController.duration = storyContent?.duration;
+        _animationController.duration = storyContent.duration;
         _animationController.forward();
         break;
       case MediaType.video:
-        final fileInfo = await checkCacheFor(storyContent!.url);
+        final fileInfo = await checkCacheFor(storyContent.url);
         if (fileInfo == null) {
           _videoController = VideoPlayerController.network(storyContent.url);
           _videoController.initialize().then((value) {
@@ -432,9 +435,10 @@ class _StoryPage2State extends State<StoryPage2>
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                              const TextSpan(
-                                                text: "  15h",
-                                                style: TextStyle(
+                                              TextSpan(
+                                                text:
+                                                    '  ${story.userStories[_currentIndex].sentTimestamp.toString()}h',
+                                                style: const TextStyle(
                                                   color: Colors.white60,
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.bold,
