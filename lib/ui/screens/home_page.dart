@@ -35,6 +35,20 @@ class _HomePageState extends State<HomePage> {
     return Future.value(stories);
   }
 
+  double getScrollIndex(int storyIndex) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double rightOffset = (screenWidth / 70).floorToDouble();
+    double maxScroll = (stories.length * 70) - rightOffset;
+
+    if (storyIndex == 0) {
+      return 0;
+    } else if (storyIndex > 0 && ((storyIndex - 1) * 70) < maxScroll) {
+      return (storyIndex - 1) * 70;
+    } else {
+      return maxScroll;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +108,8 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: CustomScrollView(
+        cacheExtent: 3500,
+        shrinkWrap: false,
         physics: const BouncingScrollPhysics(),
         controller: _customScrollViewController,
         slivers: <Widget>[
@@ -117,8 +133,8 @@ class _HomePageState extends State<HomePage> {
                           itemBuilder: (context, index) {
                             return StoryWidget(
                               story: stories[index],
-                              onStoryTap: () {
-                                Navigator.push(
+                              onStoryTap: () async {
+                                int storyIndex = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => StoryPage2(
@@ -127,6 +143,8 @@ class _HomePageState extends State<HomePage> {
                                     ),
                                   ),
                                 );
+                                _storyController
+                                    .jumpTo(getScrollIndex(storyIndex));
                               },
                             );
                           },
@@ -155,7 +173,7 @@ class _HomePageState extends State<HomePage> {
             key: key,
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                return PhotoPost(photo: _postList[index]);
+                return PhotoPost(post: _postList[index]);
               },
               childCount: _postList.length,
             ),
