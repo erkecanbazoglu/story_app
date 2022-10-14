@@ -37,15 +37,20 @@ class _StoryWidgetState extends State<StoryWidget> {
           height: 70,
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               // color: Colors.amber,
               gradient: LinearGradient(
                 begin: Alignment.bottomLeft,
                 end: Alignment.topRight,
-                colors: [
-                  Color(0xFEDA77FF),
-                  Color(0x8134AFFF),
-                ],
+                colors: story.storySeen
+                    ? [
+                        Colors.grey.shade200,
+                        Colors.grey.shade400,
+                      ]
+                    : [
+                        Color(0xFEDA77FF),
+                        Color(0x8134AFFF),
+                      ],
               ),
               shape: BoxShape.circle,
             ),

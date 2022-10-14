@@ -1,3 +1,4 @@
+import '../../services/shared_preferences.dart';
 import '../models/story.dart';
 import '../../constants/sample_users.dart' as user_samples;
 import '../models/user.dart';
@@ -8,27 +9,37 @@ import 'dart:math' as math;
 class StoryRepo {
   final PhotosAPI _photosAPI = PhotosAPI();
 
+  ///Number of photo we get from the API: Default: 50 (max: 5000)
+  static const jsonPlaceholderPhotoNumber = 50;
+
+  ///Number of photo we get from the API: Default: 5 (max: 80)
+  static const pexelApiPhotoNumber = 5;
+
+  ///Also  some images from static links, not to push API limits:) Default: 15 (max: 30)
+  static const pexelStaticUrlPhotoNumber = 15;
+
+  ///Number of video we get from the API: Default: 3 (max: 80)
+  static const pexelApiVideoNumber = 3;
+
   ///Getting the photos from JSON Placeholder
   Future<List<StoryContent>> getPhotos() async {
-    ///Number of photo we get from the API: Default: 50 (max: 5000)
-    // List<dynamic> photoList = await _photosAPI.getPhotosFromJsonPlaceholder(amount: 50);
+    // List<dynamic> photoList = await _photosAPI.getPhotosFromJsonPlaceholder(amount: jsonPlaceholderPhotoNumber);
 
-    ///Number of photo we get from the API: Default: 10 (max: 80)
-    List<dynamic> photoList = await _photosAPI.getVideosFromPexels(amount: 5);
+    List<dynamic> photoList =
+        await _photosAPI.getVideosFromPexels(amount: pexelApiPhotoNumber);
 
     List<StoryContent> photoStoryContent = [];
     for (int i = 0; i < photoList.length; i++) {
-      StoryContent content = getStoryContentFromPhoto(photoList[i]);
+      StoryContent content = getStoryContentFromPhoto(photoList[i], i);
       photoStoryContent.add(content);
     }
 
-    ///Also  some images from static links, not to push API limits:) Default: 15 (max: 30)
     List<dynamic> staticPhotoList =
-        _photosAPI.getPhotosFromPexelsStatic(amount: 15);
+        _photosAPI.getPhotosFromPexelsStatic(amount: pexelStaticUrlPhotoNumber);
 
     for (int i = 0; i < staticPhotoList.length; i++) {
       StoryContent content =
-          getStoryContentFromStaticUrl(staticPhotoList[i], MediaType.image);
+          getStoryContentFromStaticUrl(staticPhotoList[i], MediaType.image, i);
       photoStoryContent.add(content);
     }
     photoStoryContent.shuffle();
@@ -37,26 +48,31 @@ class StoryRepo {
   }
 
   ///Mapping photos to the Story Content
-  StoryContent getStoryContentFromPhoto(dynamic photo) {
+  StoryContent getStoryContentFromPhoto(dynamic photo, int index) {
     StoryContent storyContent;
     storyContent = StoryContent(
-      id: photo['id'],
+      id: index,
       url: photo['src']['large'] ?? photo['src']['original'],
       media: MediaType.image,
       duration: const Duration(seconds: 5),
+      sentTimestamp: SharedPreferencesService.getStoryContentTimestamp(index),
+      contentSeen: SharedPreferencesService.getStoryContentSeen(index),
     );
     return storyContent;
   }
 
   ///Mapping static urls to the Story Content
-  StoryContent getStoryContentFromStaticUrl(String url, MediaType mediaType) {
+  StoryContent getStoryContentFromStaticUrl(
+      String url, MediaType mediaType, int index) {
     StoryContent storyContent;
     int id = math.Random().nextInt(1000000);
     storyContent = StoryContent(
-      id: id,
+      id: pexelApiPhotoNumber + index,
       url: url,
       media: mediaType,
       duration: const Duration(seconds: 5),
+      sentTimestamp: SharedPreferencesService.getStoryContentTimestamp(index),
+      contentSeen: SharedPreferencesService.getStoryContentSeen(index),
     );
     return storyContent;
   }
@@ -65,25 +81,27 @@ class StoryRepo {
 
   ///Getting the videos from Pexels API
   Future<List<StoryContent>> getVideos() async {
-    ///Number of video we get from the API: Default: 10 (max: 80)
-    List<dynamic> videoList = await _videosAPI.getVideosFromPexels(amount: 3);
+    List<dynamic> videoList =
+        await _videosAPI.getVideosFromPexels(amount: pexelApiVideoNumber);
 
     List<StoryContent> videoStoryContent = [];
     for (int i = 0; i < videoList.length; i++) {
-      StoryContent content = getStoryContentFromVideo(videoList[i]);
+      StoryContent content = getStoryContentFromVideo(videoList[i], i);
       videoStoryContent.add(content);
     }
     return videoStoryContent;
   }
 
   ///Mapping videos to the Story Content
-  StoryContent getStoryContentFromVideo(dynamic video) {
+  StoryContent getStoryContentFromVideo(dynamic video, int index) {
     StoryContent storyContent;
     storyContent = StoryContent(
-      id: video['id'],
+      id: pexelApiPhotoNumber + pexelStaticUrlPhotoNumber + index,
       url: video['video_files'][4]['link'] ?? video['video_files'][0]['link'],
       media: MediaType.video,
       duration: const Duration(seconds: 0),
+      sentTimestamp: SharedPreferencesService.getStoryContentTimestamp(index),
+      contentSeen: SharedPreferencesService.getStoryContentSeen(index),
     );
     return storyContent;
   }
@@ -125,9 +143,24 @@ class StoryRepo {
           userStories.add(storyContents[k]);
         }
       }
+
+      ///Ordering story contents of users according to the timestamp
+      userStories.sort((a, b) => a.sentTimestamp.compareTo(b.sentTimestamp));
       userStoryContents.add(userStories);
     }
     return userStoryContents;
+  }
+
+  ///Whether Story is seen or not
+  bool getStorySeen(List<StoryContent> userStories) {
+    bool isStorySeen = true;
+    for (int i = 0; i < userStories.length; i++) {
+      if (userStories[i].contentSeen == false) {
+        isStorySeen = false;
+        break;
+      }
+    }
+    return isStorySeen;
   }
 
   ///Prepare the final stories
@@ -146,14 +179,36 @@ class StoryRepo {
         id: id,
         user: usersList[i],
         userStories: userStoryContents[i],
+        storySeen: getStorySeen(userStoryContents[i]),
       );
       stories.add(story);
     }
 
+    List<Story> seen = [];
+    List<Story> unSeen = [];
+    for (int i = 0; i < stories.length; i++) {
+      if (stories[i].storySeen) {
+        seen.add(stories[i]);
+      } else {
+        unSeen.add(stories[i]);
+      }
+    }
+
     ///Mixing the Story order
     stories.shuffle();
+
+    ///Ordering according to seen / unseen
+    stories = List.from(unSeen)..addAll(seen);
+
     return stories;
   }
+
+  // ///Make all stories unseen (Use only if necessary)
+  // void makeStoriesUnseen(userStoryContents) {
+  //   for (int i = 0; i < userStoryContents.length; i++) {
+  //     SharedPreferencesService.setAllStoryContentUnseen(userStoryContents[i]);
+  //   }
+  // }
 
   ///Prepare the Story Contents from photos and videos
   Future<List<Story>> prepareStoryContents() async {

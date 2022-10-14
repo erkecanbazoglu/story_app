@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:test_app/services/shared_preferences.dart';
 import 'logic/cubit/internet_cubit.dart';
 import 'ui/services/router_service.dart';
 import 'logic/bloc/stories_bloc.dart';
@@ -10,9 +11,12 @@ import 'logic/bloc/user_bloc.dart';
 import 'ui/screens/welcome_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await Future.wait([
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
+    SharedPreferencesService.init()
+  ]);
   runApp(
     MyApp(connectivity: Connectivity()),
   );
