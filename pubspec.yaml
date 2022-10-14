@@ -12,6 +12,7 @@ dependencies:
   http: ^0.13.5
   video_player: ^2.4.7
   cached_network_image: ^3.1.0
+  flutter_cache_manager: ^3.3.0
   percent_indicator: ^3.0.1
   dismissible_page: ^0.7.3
   bloc: ^8.1.0

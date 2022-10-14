@@ -252,7 +252,7 @@ packages:
     source: hosted
     version: "0.7.0"
   flutter_cache_manager:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_cache_manager
       url: "https://pub.dartlang.org"
@@ -263,7 +263,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: f545d70d0a5c0847449a5527047831b33f1b4f87
+      resolved-ref: b0b0825a5b4a5a33d07762c967f578a55289644d
       url: "https://github.com/erkecanbazoglu/FlutterCarouselSlider"
     source: git
     version: "1.0.9"

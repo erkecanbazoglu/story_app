@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dismissible_page/dismissible_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_carousel_slider/carousel_slider.dart';
 import 'package:flutter_carousel_slider/carousel_slider_indicators.dart';
 import 'package:flutter_carousel_slider/carousel_slider_transforms.dart';
@@ -32,7 +33,7 @@ class StoryPage2 extends StatefulWidget {
 }
 
 class _StoryPage2State extends State<StoryPage2>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late PageController _pageController;
   late VideoPlayerController _videoController;
   late AnimationController _animationController;
@@ -44,7 +45,19 @@ class _StoryPage2State extends State<StoryPage2>
   double? screenWidth;
   double? dx;
 
-  void _startStory({StoryContent? storyContent, bool shouldAnimate = true}) {
+  Future<FileInfo?> checkCacheFor(String url) async {
+    final FileInfo? value = await DefaultCacheManager().getFileFromCache(url);
+    return value;
+  }
+
+  void cachedForUrl(String url) async {
+    await DefaultCacheManager().getSingleFile(url).then((value) {
+      print('downloaded successfully done for $url');
+    });
+  }
+
+  void _startStory(
+      {StoryContent? storyContent, bool shouldAnimate = true}) async {
     //Stop the animation and reset the animation bar
     _animationController.stop();
     _animationController.reset();
@@ -56,17 +69,34 @@ class _StoryPage2State extends State<StoryPage2>
         _animationController.forward();
         break;
       case MediaType.video:
-        //Initialize the video controller
-        _videoController = VideoPlayerController.network(storyContent!.url)
-          ..initialize().then((_) {
-            setState(() {});
-            if (_videoController.value.isInitialized) {
-              //Set the video duration and start the animation
-              _animationController.duration = _videoController.value.duration;
-              _videoController.play();
-              _animationController.forward();
-            }
+        final fileInfo = await checkCacheFor(storyContent!.url);
+        if (fileInfo == null) {
+          _videoController = VideoPlayerController.network(storyContent.url);
+          _videoController.initialize().then((value) {
+            cachedForUrl(storyContent.url);
+            setState(() {
+              if (_videoController.value.isInitialized) {
+                //Set the video duration and start the animation
+                _animationController.duration = _videoController.value.duration;
+                _videoController.play();
+                _animationController.forward();
+              }
+            });
           });
+        } else {
+          final file = fileInfo.file;
+          _videoController = VideoPlayerController.file(file);
+          _videoController.initialize().then((value) {
+            setState(() {
+              if (_videoController.value.isInitialized) {
+                //Set the video duration and start the animation
+                _animationController.duration = _videoController.value.duration;
+                _videoController.play();
+                _animationController.forward();
+              }
+            });
+          });
+        }
         break;
       default:
         _animationController.forward();
@@ -143,7 +173,7 @@ class _StoryPage2State extends State<StoryPage2>
     _animationController.reset();
 
     if (_currentStory == 0) {
-      Navigator.pop(context);
+      Navigator.pop(context, _currentStory);
       return;
     }
     setState(() {
@@ -162,7 +192,7 @@ class _StoryPage2State extends State<StoryPage2>
     initVideoController();
 
     if (_currentStory == widget.stories.length - 1) {
-      Navigator.pop(context);
+      Navigator.pop(context, _currentStory);
       return;
     }
     setState(() {
@@ -218,6 +248,7 @@ class _StoryPage2State extends State<StoryPage2>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance?.addObserver(this);
     story = widget.stories[widget.storyIndex];
     _currentStory = widget.storyIndex;
 
@@ -245,10 +276,23 @@ class _StoryPage2State extends State<StoryPage2>
   }
 
   @override
+  void didChangeAppLifeCycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _pauseStory(story);
+    } else if (state == AppLifecycleState.resumed) {
+      _continueStory(story);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DismissiblePage(
       onDismissed: () {
-        Navigator.of(context).pop();
+        Navigator.pop(context, _currentStory);
       },
       onDragStart: () => _pauseStory(story.userStories[_currentIndex]),
       onDragEnd: () => _continueStory(story.userStories[_currentIndex]),
@@ -267,10 +311,10 @@ class _StoryPage2State extends State<StoryPage2>
           autoSliderTransitionCurve: Curves.easeInOut,
           autoSliderTransitionTime: const Duration(milliseconds: 300),
           onSlideChanged: (index) => _moveToNewStory(index),
-          onDragStart: () {
+          onSlideStart: () {
             _pauseStory(story.userStories[_currentIndex]);
           },
-          onDragEnd: () {
+          onSlideEnd: () {
             _continueStory(story.userStories[_currentIndex]);
           },
           slideBuilder: (carouselIndex) {
@@ -317,21 +361,25 @@ class _StoryPage2State extends State<StoryPage2>
                 SafeArea(
                   child: Column(
                     children: [
-                      Row(
-                        children: story.userStories
-                            .asMap()
-                            .map((index, storyItem) {
-                              return MapEntry(
-                                index,
-                                AnimatedBar(
-                                  animationController: _animationController,
-                                  position: index,
-                                  currentIndex: _currentIndex,
-                                ),
-                              );
-                            })
-                            .values
-                            .toList(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 2),
+                        child: Row(
+                          children: story.userStories
+                              .asMap()
+                              .map((index, storyItem) {
+                                return MapEntry(
+                                  index,
+                                  AnimatedBar(
+                                    animationController: _animationController,
+                                    position: index,
+                                    currentIndex: _currentIndex,
+                                  ),
+                                );
+                              })
+                              .values
+                              .toList(),
+                        ),
                       ),
                       Expanded(
                         child: Padding(
@@ -345,11 +393,26 @@ class _StoryPage2State extends State<StoryPage2>
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  const CircleAvatar(
-                                    radius: 16,
-                                    backgroundImage:
-                                        AssetImage('assets/avatars/2.jpg'),
+                                  CachedNetworkImage(
+                                    imageUrl: story.user.profileImage,
+                                    imageBuilder: (context, imageProvider) =>
+                                        Container(
+                                      height: 32,
+                                      width: 32,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        image: DecorationImage(
+                                          image: imageProvider,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
                                   ),
+                                  // CircleAvatar(
+                                  //   radius: 16,
+                                  //   backgroundImage:
+                                  //       NetworkImage(story.user.profileImage),
+                                  // ),
                                   Padding(
                                     padding: const EdgeInsets.only(left: 12),
                                     child: Column(
@@ -357,19 +420,19 @@ class _StoryPage2State extends State<StoryPage2>
                                           CrossAxisAlignment.start,
                                       children: [
                                         RichText(
-                                          text: const TextSpan(
+                                          text: TextSpan(
                                             style:
                                                 TextStyle(color: Colors.black),
                                             children: [
                                               TextSpan(
-                                                text: "Erke Canbazoğlu",
-                                                style: TextStyle(
+                                                text: story.user.name,
+                                                style: const TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 13,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                              TextSpan(
+                                              const TextSpan(
                                                 text: "  15h",
                                                 style: TextStyle(
                                                   color: Colors.white60,
@@ -401,7 +464,8 @@ class _StoryPage2State extends State<StoryPage2>
                                               Icons.close,
                                             ),
                                             onPressed: () {
-                                              Navigator.pop(context);
+                                              Navigator.pop(
+                                                  context, _currentStory);
                                             },
                                           ),
                                         ],
@@ -498,6 +562,7 @@ class _StoryPage2State extends State<StoryPage2>
     _pageController.dispose();
     _animationController.dispose();
     _videoController.dispose();
+    WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
   }
 }

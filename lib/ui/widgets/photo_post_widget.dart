@@ -3,25 +3,37 @@ import 'dart:math' as math;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PhotoPost extends StatefulWidget {
-  const PhotoPost({required this.photo});
+  const PhotoPost({required this.post});
 
-  final int photo;
+  final int post;
 
   @override
   State<PhotoPost> createState() => _PhotoPostState();
 }
 
 class _PhotoPostState extends State<PhotoPost> {
+  late Image postAvatar;
+  late Image postImage;
+
   int random(int min, int max) {
     return min + math.Random().nextInt(max - min);
   }
 
-  String? photo;
+  String? post;
 
   @override
   void initState() {
     super.initState();
-    photo = widget.photo.toString();
+    post = widget.post.toString();
+    postAvatar = Image.asset("assets/avatars/${post}.jpg", fit: BoxFit.cover);
+    postImage = Image.asset("assets/posts/${post}.jpg", fit: BoxFit.cover);
+  }
+
+  @override
+  void didChangeDependencies() {
+    precacheImage(postAvatar.image, context);
+    precacheImage(postImage.image, context);
+    super.didChangeDependencies();
   }
 
   @override
@@ -38,7 +50,7 @@ class _PhotoPostState extends State<PhotoPost> {
             children: [
               CircleAvatar(
                 radius: 16,
-                backgroundImage: AssetImage('assets/avatars/${photo}.jpg'),
+                backgroundImage: postAvatar.image,
               ),
               Padding(
                 padding: const EdgeInsets.only(left: 12),
@@ -81,10 +93,7 @@ class _PhotoPostState extends State<PhotoPost> {
         SizedBox(
           // height: MediaQuery.of(context).size.height * 0.35,
           width: double.infinity,
-          child: Image.asset(
-            'assets/posts/${photo}.jpg',
-            fit: BoxFit.cover,
-          ),
+          child: postImage,
         ),
         //The rest (icons, likes, comments)
         Padding(
