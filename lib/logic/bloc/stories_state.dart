@@ -1,9 +1,38 @@
 part of 'stories_bloc.dart';
 
-class StoriesState {}
+abstract class StoriesState extends Equatable {
+  const StoriesState();
 
-///Stories Loading State
-class StoriesLoading extends StoriesState {}
+  @override
+  List<Object> get props => [];
+}
 
-///Stories Loading State
-class StoriesLoaded extends StoriesState {}
+class StoriesLoading extends StoriesState {
+  const StoriesLoading();
+
+  @override
+  List<Object> get props => [];
+}
+
+class StoriesLoaded extends StoriesState {
+  final List<Story>? stories;
+  const StoriesLoaded(this.stories);
+
+  @override
+  List<Object> get props => [stories!];
+}
+
+class StoriesError extends StoriesState {
+  final String? message;
+  const StoriesError(this.message);
+
+  @override
+  List<Object> get props => [message!];
+}
+
+class StoriesInternetError extends StoriesState {
+  const StoriesInternetError();
+
+  @override
+  List<Object> get props => [];
+}

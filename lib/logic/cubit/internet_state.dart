@@ -6,14 +6,32 @@ enum ConnectionType {
 }
 
 @immutable
-abstract class InternetState {}
+abstract class InternetState extends Equatable {
+  const InternetState();
 
-class InternetLoading extends InternetState {}
+  @override
+  List<Object> get props => [];
+}
+
+class InternetLoading extends InternetState {
+  const InternetLoading();
+
+  @override
+  List<Object> get props => [];
+}
 
 class InternetConnected extends InternetState {
   final ConnectionType connectionType;
 
-  InternetConnected({required this.connectionType});
+  const InternetConnected({required this.connectionType});
+
+  @override
+  List<Object> get props => [connectionType];
 }
 
-class InternetDisconnected extends InternetState {}
+class InternetDisconnected extends InternetState {
+  const InternetDisconnected();
+
+  @override
+  List<Object> get props => [];
+}

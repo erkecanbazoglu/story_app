@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 
@@ -9,7 +9,7 @@ part '../cubit/internet_state.dart';
 class InternetCubit extends Cubit<InternetState> {
   final Connectivity connectivity;
   late StreamSubscription connectivityStreamSubscription;
-  InternetCubit({required this.connectivity}) : super(InternetLoading()) {
+  InternetCubit({required this.connectivity}) : super(const InternetLoading()) {
     connectivityStreamSubscription =
         connectivity.onConnectivityChanged.listen((connectivityResult) {
       if (connectivityResult == ConnectivityResult.wifi) {
@@ -25,7 +25,7 @@ class InternetCubit extends Cubit<InternetState> {
   void emitInternetConnected(ConnectionType _connectionType) =>
       emit(InternetConnected(connectionType: _connectionType));
 
-  void emitInternetDisconnected() => emit(InternetDisconnected());
+  void emitInternetDisconnected() => emit(const InternetDisconnected());
 
   @override
   Future<void> close() {

@@ -6,7 +6,9 @@ import '../providers/photos.dart';
 import '../providers/videos.dart';
 import 'dart:math' as math;
 
-class StoryRepo {
+class StoriesRepo {
+  StoriesRepo();
+
   final PhotosAPI _photosAPI = PhotosAPI();
 
   ///Number of photo we get from the API: Default: 50 (max: 5000)
@@ -211,7 +213,7 @@ class StoryRepo {
   // }
 
   ///Prepare the Story Contents from photos and videos
-  Future<List<Story>> prepareStoryContents() async {
+  Future<List<Story>> getFinalStories() async {
     ///Getting photos and videos in Story Content format
     List<StoryContent> photoList = await getPhotos();
     List<StoryContent> videoList = await getVideos();

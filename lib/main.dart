@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:test_app/data/repos/stories_repo.dart';
+import 'package:test_app/logic/bloc/stories_bloc.dart';
 import 'package:test_app/services/shared_preferences.dart';
 import 'logic/cubit/internet_cubit.dart';
 import 'ui/services/router_service.dart';
-import 'logic/bloc/stories_bloc.dart';
 import 'logic/bloc/user_bloc.dart';
 import 'ui/screens/welcome_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -24,7 +25,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   final Connectivity connectivity;
-  MyApp({
+  const MyApp({
     Key? key,
     required this.connectivity,
   }) : super(key: key);
@@ -34,15 +35,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<StoriesBloc>(
-          create: (context) => StoriesBloc(),
-        ),
-        BlocProvider<UserBloc>(
-          create: (context) => UserBloc(),
-        ),
         BlocProvider<InternetCubit>(
           create: (context) => InternetCubit(connectivity: connectivity),
         ),
+        BlocProvider<StoriesBloc>(
+          // read: context.read<InternetCubit>(),
+          create: (context) => StoriesBloc(StoriesRepo()),
+        ),
+        // BlocProvider<UserBloc>(
+        //   create: (context) => UserBloc(),
+        // ),
       ],
       child: MaterialApp(
         title: 'Story App',
