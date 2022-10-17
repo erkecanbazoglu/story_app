@@ -20,7 +20,7 @@ Story application developed with Flutter
 
 ### Screenshot
 
-![Design preview](./assets/app-screenshot.png)
+![Design preview](./assets/app-square.png)
 
 ### Built with
 
