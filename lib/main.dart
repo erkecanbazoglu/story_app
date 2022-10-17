@@ -4,8 +4,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:test_app/data/repos/stories_repo.dart';
-import 'package:test_app/logic/bloc/stories_bloc.dart';
+import 'package:test_app/data/repos/story_repo.dart';
 import 'package:test_app/services/shared_preferences.dart';
+import 'data/repos/story_content_repo.dart';
+import 'logic/bloc/stories/stories_bloc.dart';
+import 'logic/bloc/story/story_bloc.dart';
+import 'logic/bloc/story_content/story_content_bloc.dart';
 import 'logic/cubit/internet_cubit.dart';
 import 'ui/services/router_service.dart';
 import 'logic/bloc/user_bloc.dart';
@@ -39,8 +43,13 @@ class MyApp extends StatelessWidget {
           create: (context) => InternetCubit(connectivity: connectivity),
         ),
         BlocProvider<StoriesBloc>(
-          // read: context.read<InternetCubit>(),
           create: (context) => StoriesBloc(StoriesRepo()),
+        ),
+        BlocProvider<StoryBloc>(
+          create: (context) => StoryBloc(StoryRepo()),
+        ),
+        BlocProvider<StoryContentBloc>(
+          create: (context) => StoryContentBloc(StoryContentRepo()),
         ),
         // BlocProvider<UserBloc>(
         //   create: (context) => UserBloc(),

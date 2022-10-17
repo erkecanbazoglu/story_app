@@ -7,6 +7,10 @@ abstract class StoriesEvent extends Equatable {
   List<Object> get props => [];
 }
 
+//Events:
+//GetStories
+//StoriesInternetNone
+
 class GetStories extends StoriesEvent {
   const GetStories();
 

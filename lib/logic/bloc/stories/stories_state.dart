@@ -7,6 +7,12 @@ abstract class StoriesState extends Equatable {
   List<Object> get props => [];
 }
 
+//States:
+//StoriesLoading
+//StoriesLoaded
+//StoriesError
+//StoriesInternetError
+
 class StoriesLoading extends StoriesState {
   const StoriesLoading();
 

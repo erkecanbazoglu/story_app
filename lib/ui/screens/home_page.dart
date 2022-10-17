@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test_app/logic/cubit/internet_cubit.dart';
-import '../../logic/bloc/stories_bloc.dart';
+import 'package:test_app/ui/screens/story_page2.dart';
+import 'package:test_app/ui/screens/story_page3.dart';
+import '../../logic/bloc/stories/stories_bloc.dart';
+import '../../logic/bloc/story/story_bloc.dart';
 import 'story_page.dart';
 import '../widgets/story_widget.dart';
 import '../../data/models/story.dart';
@@ -40,6 +43,13 @@ class _HomePageState extends State<HomePage> {
     } else {
       return maxScroll;
     }
+  }
+
+  //New Functions
+
+  void openStory(int storyIndex) {
+    final storyBloc = BlocProvider.of<StoryBloc>(context);
+    storyBloc.add(OpenStory(stories, storyIndex));
   }
 
   @override
@@ -155,16 +165,18 @@ class _HomePageState extends State<HomePage> {
                         return StoryWidget(
                           story: stories[index],
                           onStoryTap: () async {
-                            int storyIndex = await Navigator.push(
+                            // openStory(index);
+                            // late int storyIndex;
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => StoryPage2(
+                                builder: (context) => StoryPage3(
                                   stories: stories,
                                   storyIndex: index,
                                 ),
                               ),
                             );
-                            _storyController.jumpTo(getScrollIndex(storyIndex));
+                            // _storyController.jumpTo(getScrollIndex(storyIndex));
                           },
                         );
                       },

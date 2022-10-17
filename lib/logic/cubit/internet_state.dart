@@ -13,6 +13,11 @@ abstract class InternetState extends Equatable {
   List<Object> get props => [];
 }
 
+//States:
+//InternetLoading
+//InternetConnected
+//InternetDisconnected
+
 class InternetLoading extends InternetState {
   const InternetLoading();
 
