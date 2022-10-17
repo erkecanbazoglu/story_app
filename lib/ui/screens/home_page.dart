@@ -1,17 +1,18 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:test_app/logic/cubit/internet_cubit.dart';
+import 'package:test_app/ui/screens/story_page2.dart';
+import 'package:test_app/ui/screens/story_page3.dart';
+import '../../logic/bloc/stories/stories_bloc.dart';
+import '../../logic/bloc/story/story_bloc.dart';
 import 'story_page.dart';
 import '../widgets/story_widget.dart';
-import '../../data/models/data.dart';
-import '../../data/providers/photos.dart';
-import 'others/first_page.dart';
 import '../../data/models/story.dart';
-import '../../data/repos/story_repo.dart';
-import 'others/first_page.dart';
 import '../widgets/photo_post_widget.dart';
-import 'dart:async';
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -22,17 +23,12 @@ class _HomePageState extends State<HomePage> {
   final key = GlobalKey();
   //Just a temp list with 10 items
   final List<int> _postList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-  List<Story> stories = [];
+  late List<Story> stories;
 
-  final StoryRepo _storyRepo = StoryRepo();
-
-  // void testFunction() async {
-  //   stories = await _storyRepo.prepareStoryContents();
-  // }
-
-  Future<List<Story>> generateStories() async {
-    stories = await _storyRepo.prepareStoryContents();
-    return Future.value(stories);
+  void getStories() {
+    // Always provide context for bloc in order to update the UI
+    final storiesBloc = BlocProvider.of<StoriesBloc>(context);
+    storiesBloc.add(const GetStories());
   }
 
   double getScrollIndex(int storyIndex) {
@@ -49,10 +45,17 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  //New Functions
+
+  void openStory(int storyIndex) {
+    final storyBloc = BlocProvider.of<StoryBloc>(context);
+    storyBloc.add(OpenStory(stories, storyIndex));
+  }
+
   @override
   void initState() {
     super.initState();
-    // testFunction();
+    getStories();
   }
 
   @override
@@ -115,59 +118,76 @@ class _HomePageState extends State<HomePage> {
         slivers: <Widget>[
           //Stories
           SliverToBoxAdapter(
-            child: Column(
-              children: [
-                FutureBuilder<List<Story>>(
-                  future: generateStories(),
-                  builder: (BuildContext context,
-                      AsyncSnapshot<List<Story>> snapshot) {
-                    List<Widget> children;
-                    if (snapshot.hasData) {
-                      return SizedBox(
-                        height: 70,
-                        child: ListView.builder(
-                          controller: _storyController,
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: stories.length,
-                          itemBuilder: (context, index) {
-                            return StoryWidget(
-                              story: stories[index],
-                              onStoryTap: () async {
-                                int storyIndex = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => StoryPage2(
-                                      stories: stories,
-                                      storyIndex: index,
-                                    ),
-                                  ),
-                                );
-                                _storyController
-                                    .jumpTo(getScrollIndex(storyIndex));
-                              },
+            child: BlocConsumer<StoriesBloc, StoriesState>(
+              listener: (context, state) {
+                if (state is StoriesError) {
+                  final internetCubit = BlocProvider.of<InternetCubit>(context);
+                  String snackbarText =
+                      internetCubit.state is InternetDisconnected
+                          ? "Internet error!"
+                          : state.message!;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(snackbarText),
+                    ),
+                  );
+                }
+
+                //     if (state is StoriesLoaded) {
+                //   context.read<ThemeCubit>().updateTheme(state.weather);
+                // }
+              },
+              builder: (context, state) {
+                if (state is StoriesLoading) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      CircularProgressIndicator(),
+                    ],
+                  );
+                } else if (state is StoriesError) {
+                  if (BlocProvider.of<InternetCubit>(context).state
+                      is InternetDisconnected) {
+                    return const Text("Internet error!");
+                  } else {
+                    return Text(state.message!);
+                  }
+                } else if (state is StoriesLoaded) {
+                  stories = state.stories!;
+                  return SizedBox(
+                    height: 70,
+                    child: ListView.builder(
+                      controller: _storyController,
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: stories.length,
+                      itemBuilder: (context, index) {
+                        return StoryWidget(
+                          story: stories[index],
+                          onStoryTap: () async {
+                            // openStory(index);
+                            // late int storyIndex;
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => StoryPage3(
+                                  stories: stories,
+                                  storyIndex: index,
+                                ),
+                              ),
                             );
+                            // _storyController.jumpTo(getScrollIndex(storyIndex));
                           },
-                        ),
-                      );
-                    } else if (snapshot.hasError) {
-                      return const Icon(
-                        Icons.error_outline,
-                        color: Colors.red,
-                        size: 20,
-                      );
-                    } else {
-                      return const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(),
-                      );
-                    }
-                  },
-                ),
-              ],
+                        );
+                      },
+                    ),
+                  );
+                }
+                return const Text('Something went wrong!');
+              },
             ),
           ),
+
           //Posts
           SliverList(
             key: key,

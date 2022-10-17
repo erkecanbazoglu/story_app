@@ -19,21 +19,21 @@ import '../../data/models/user.dart';
 import '../widgets/progress_bars.dart';
 import '../widgets/animated_bar.dart';
 
-class StoryPage2 extends StatefulWidget {
+class StoryPage extends StatefulWidget {
   final List<Story> stories;
   final int storyIndex;
 
-  const StoryPage2({
+  const StoryPage({
     Key? key,
     required this.stories,
     required this.storyIndex,
   }) : super(key: key);
 
   @override
-  State<StoryPage2> createState() => _StoryPage2State();
+  State<StoryPage> createState() => _StoryPageState();
 }
 
-class _StoryPage2State extends State<StoryPage2>
+class _StoryPageState extends State<StoryPage>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late PageController _pageController;
   late VideoPlayerController _videoController;

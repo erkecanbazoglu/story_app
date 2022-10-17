@@ -63,21 +63,22 @@ class _StoryWidgetState extends State<StoryWidget> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(2),
-                  child: Hero(
-                    ///Hero for the specified user tag
-                    tag: story.id,
-                    child: Center(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.cover,
-                          ),
+                  child:
+                      // Hero(
+                      ///Hero for the specified user tag
+                      // tag: story.id,
+                      Center(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: imageProvider,
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
                   ),
+                  // ),
                 ),
               ),
             ),
