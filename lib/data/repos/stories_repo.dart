@@ -1,6 +1,7 @@
-import 'package:test_app/data/repos/story_repo.dart';
-import '../../logic/bloc/story/story_bloc.dart';
+import 'story_repo.dart';
 import '../models/story.dart';
+
+///Stories Repo
 
 class StoriesRepo {
   StoriesRepo();

@@ -3,12 +3,56 @@
     "@helloWorld": {
       "description": "The conventional newborn programmer greeting"
     },
-    "test": "Test",
-    "@test": {
-      "description": "Test string"
+    "internetError": "Internet error!",
+    "@internetError": {
+      "description": ""
     },
-    "hello": "Hello",
-    "@hello": {
+    "internetConnection": "Internet Connection:",
+    "@internetConnection": {
+      "description": ""
+    },
+    "wifi": "Wifi",
+    "@wifi": {
+      "description": ""
+    },
+    "mobile": "Mobile",
+    "@mobile": {
+      "description": ""
+    },
+    "noInternet": "No internet!",
+    "@noInternet": {
+      "description": ""
+    },
+    "pushedButtonText": "You have pushed the button this many times:",
+    "@pushedButtonText": {
+      "description": ""
+    },
+    "firstPage": "First Page",
+    "@firstPage": {
+      "description": ""
+    },
+    "secondPage": "Second Page",
+    "@secondPage": {
+      "description": ""
+    },
+    "thirdPage": "Third Page",
+    "@thirdPage": {
+      "description": ""
+    },
+    "fourthPage": "Fourth Page",
+    "@fourthPage": {
+      "description": ""
+    },
+    "fifthPage": "Fifth Page",
+    "@fifthPage": {
+      "description": ""
+    },
+    "sendMessage": "Send Message",
+    "@sendMessage": {
+      "description": ""
+    },
+    "somethingWentWrong": "Something went wrong!",
+    "@somethingWentWrong": {
       "description": ""
     }
 }

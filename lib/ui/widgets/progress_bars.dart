@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'progress_bar.dart';
 
+///Deprecated Progress Bars Widget
+
 class ProgressBars extends StatelessWidget {
   List<double> percentWatched;
   ProgressBars({Key? key, required this.percentWatched}) : super(key: key);

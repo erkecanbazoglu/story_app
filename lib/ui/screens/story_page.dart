@@ -1,22 +1,16 @@
-import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dismissible_page/dismissible_page.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_carousel_slider/carousel_slider.dart';
-import 'package:flutter_carousel_slider/carousel_slider_indicators.dart';
 import 'package:flutter_carousel_slider/carousel_slider_transforms.dart';
-import 'package:test_app/services/shared_preferences.dart';
+import '../../services/shared_preferences.dart';
 import '../widgets/video_player_widget.dart';
 import 'package:video_player/video_player.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:math' as math;
 import 'dart:async';
-import '../../constants/constants.dart';
 import '../../data/models/story.dart';
-import '../../data/models/user.dart';
-import '../widgets/progress_bars.dart';
 import '../widgets/animated_bar.dart';
 
 class StoryPage extends StatefulWidget {
@@ -38,7 +32,8 @@ class _StoryPageState extends State<StoryPage>
   late PageController _pageController;
   late VideoPlayerController _videoController;
   late AnimationController _animationController;
-  CarouselSliderController _carouselController = CarouselSliderController();
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
   final GlobalKey _carouselKey = GlobalKey();
   late Story story;
   int _currentIndex = 0;
@@ -46,24 +41,28 @@ class _StoryPageState extends State<StoryPage>
   double? screenWidth;
   double? dx;
 
+  ///Checking for video cache
   Future<FileInfo?> checkCacheFor(String url) async {
     final FileInfo? value = await DefaultCacheManager().getFileFromCache(url);
     return value;
   }
 
+  ///Caches the videos if not cached
   void cachedForUrl(String url) async {
     await DefaultCacheManager().getSingleFile(url).then((value) {
       print('downloaded successfully done for $url');
     });
   }
 
-  void _startStory(
+  ///Plays the Story Content
+  void _playStory(
       {StoryContent? storyContent, bool shouldAnimate = true}) async {
     //Stop the animation and reset the animation bar
     _animationController.stop();
     _animationController.reset();
 
     SharedPreferencesService.setStoryContentSeen(storyContent!.id);
+    storyContent.contentSeen = true;
 
     switch (storyContent.media) {
       case MediaType.image:
@@ -111,6 +110,7 @@ class _StoryPageState extends State<StoryPage>
     }
   }
 
+  ///Move to new story after carousel page slide
   void _moveToNewStory(int newStoryIndex) {
     _animationController.stop();
     _animationController.reset();
@@ -120,18 +120,19 @@ class _StoryPageState extends State<StoryPage>
       _currentStory = newStoryIndex;
       story = widget.stories[_currentStory];
       _carouselController;
-      _startStory(
+      _playStory(
           storyContent: story.userStories[_currentIndex], shouldAnimate: false);
     });
   }
 
-  //Gesture Functions
+  ///esture Function: Initial tap move
   void _onTapDown(TapDownDetails details) {
     screenWidth = MediaQuery.of(context).size.width;
     dx = details.globalPosition.dx;
     _pauseStory(story.userStories[_currentIndex]);
   }
 
+  ///Gesture Function: Tap confirmed
   void _onTap() async {
     _animationController.stop();
     _animationController.reset();
@@ -151,26 +152,29 @@ class _StoryPageState extends State<StoryPage>
     }
   }
 
+  ///Moves to the Previous Story Content
   void moveToPreviousStoryContent() {
     _animationController.stop();
     _animationController.reset();
 
     setState(() {
       _currentIndex--;
-      _startStory(storyContent: story.userStories[_currentIndex]);
+      _playStory(storyContent: story.userStories[_currentIndex]);
     });
   }
 
+  ///Moves to the Next Story Content
   void moveToNextStoryContent() {
     _animationController.stop();
     _animationController.reset();
 
     setState(() {
       _currentIndex++;
-      _startStory(storyContent: story.userStories[_currentIndex]);
+      _playStory(storyContent: story.userStories[_currentIndex]);
     });
   }
 
+  ///Moves to the Previous Story
   void navigateToPreviousPage() {
     _animationController.stop();
     _animationController.reset();
@@ -184,15 +188,16 @@ class _StoryPageState extends State<StoryPage>
       _currentStory--;
       story = widget.stories[_currentStory];
       _carouselController.previousPage();
-      _startStory(
+      _playStory(
           storyContent: story.userStories[_currentIndex], shouldAnimate: false);
     });
   }
 
+  ///Moves to the Next Story
   void navigateToNextPage() {
     _animationController.stop();
     _animationController.reset();
-    initVideoController();
+    // initVideoController();
 
     if (_currentStory == widget.stories.length - 1) {
       Navigator.pop(context, _currentStory);
@@ -203,11 +208,12 @@ class _StoryPageState extends State<StoryPage>
       _currentStory++;
       story = widget.stories[_currentStory];
       _carouselController.nextPage();
-      _startStory(
+      _playStory(
           storyContent: story.userStories[_currentIndex], shouldAnimate: false);
     });
   }
 
+  ///Pause the Story Content
   void _pauseStory(story) {
     if (story.media == MediaType.video) {
       if (_videoController.value.isPlaying) {
@@ -219,7 +225,8 @@ class _StoryPageState extends State<StoryPage>
     }
   }
 
-  void _continueStory(story) {
+  ///Resume the Story Content
+  void _resumeStory(story) {
     if (story.media == MediaType.video) {
       _videoController.play();
       _animationController.forward();
@@ -228,45 +235,62 @@ class _StoryPageState extends State<StoryPage>
     }
   }
 
+  ///Initializing the video controller
+  ///If not problem occurs on dispose
   void initVideoController() {
-    //This function detects the first video story
-    // for (int i = 0; i < stories.length; i++) {
-    //   if (stories[i].media == MediaType.video) {
-    //     _videoController =
-    //
-    //           _videoController = VideoPlayerController.asset(stories[i].url)
-    //           ..initialize().then((_) {
-    //             setState(() {});
-    //           });
-    //     break;
-    //   }
-    // }
-    _videoController = VideoPlayerController.network(
-        "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4")
-      ..initialize().then((_) {
-        setState(() {});
-      });
+    if (story.userStories[_currentIndex].media == MediaType.video) {
+      _videoController =
+          VideoPlayerController.network(story.userStories[_currentIndex].url)
+            ..initialize().then((_) {
+              setState(() {});
+            });
+    } else {
+      _videoController = VideoPlayerController.network(
+          "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4")
+        ..initialize().then((_) {
+          setState(() {});
+        });
+    }
+  }
+
+  ///Gets the first unseen Story Content
+  void getInitialUnseenIndex() {
+    for (int i = 0; i < story.userStories.length; i++) {
+      if (story.userStories[i].contentSeen == false) {
+        _currentIndex = i;
+        break;
+      }
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance?.addObserver(this);
-    story = widget.stories[widget.storyIndex];
-    _currentStory = widget.storyIndex;
 
-    _pageController = PageController();
+    ///For getting the app lifecycle
+    WidgetsBinding.instance?.addObserver(this);
+
+    ///Getting the initial story
+    _currentStory = widget.storyIndex;
+    story = widget.stories[widget.storyIndex];
+
+    ///Getting the first unseen story content
+    getInitialUnseenIndex();
+
+    ///Controller initialization
+    _pageController = PageController(initialPage: _currentIndex);
     _animationController = AnimationController(vsync: this);
 
-    //To make video controller initialized
+    ///Video controller initialized
     initVideoController();
 
     //The very first story
-    final StoryContent initialStory = story.userStories[0];
+    final StoryContent initialStory = story.userStories[_currentIndex];
 
     //Starting the stories
-    _startStory(storyContent: initialStory, shouldAnimate: false);
+    _playStory(storyContent: initialStory, shouldAnimate: false);
 
+    ///Animation Controller listener (for auto page slides)
     _animationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         if (_currentIndex + 1 < story.userStories.length) {
@@ -278,16 +302,16 @@ class _StoryPageState extends State<StoryPage>
     });
   }
 
+  ///Getting and acting according to the app lifecycle
   @override
   void didChangeAppLifeCycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
-      _pauseStory(story);
+      _pauseStory(story.userStories[_currentIndex]);
     } else if (state == AppLifecycleState.resumed) {
-      _continueStory(story);
+      _resumeStory(story.userStories[_currentIndex]);
     }
   }
 
@@ -298,7 +322,7 @@ class _StoryPageState extends State<StoryPage>
         Navigator.pop(context, _currentStory);
       },
       onDragStart: () => _pauseStory(story.userStories[_currentIndex]),
-      onDragEnd: () => _continueStory(story.userStories[_currentIndex]),
+      onDragEnd: () => _resumeStory(story.userStories[_currentIndex]),
       backgroundColor: Colors.white,
       direction: DismissiblePageDismissDirection.down,
       isFullScreen: true,
@@ -314,12 +338,8 @@ class _StoryPageState extends State<StoryPage>
           autoSliderTransitionCurve: Curves.easeInOut,
           autoSliderTransitionTime: const Duration(milliseconds: 300),
           onSlideChanged: (index) => _moveToNewStory(index),
-          onSlideStart: () {
-            _pauseStory(story.userStories[_currentIndex]);
-          },
-          onSlideEnd: () {
-            _continueStory(story.userStories[_currentIndex]);
-          },
+          onSlideStart: () => _pauseStory(story.userStories[_currentIndex]),
+          onSlideEnd: () => _resumeStory(story.userStories[_currentIndex]),
           slideBuilder: (carouselIndex) {
             return Stack(
               children: [
@@ -330,26 +350,25 @@ class _StoryPageState extends State<StoryPage>
                   onTap: () => _onTap(),
                   //continue the story
                   onLongPressEnd: (_) =>
-                      _continueStory(story.userStories[_currentIndex]),
+                      _resumeStory(story.userStories[_currentIndex]),
                   child: Hero(
-                    tag: widget.stories[carouselIndex].id,
-                    child: PageView.builder(
+                      tag: widget.stories[carouselIndex].id,
+                      child: PageView.builder(
                         controller: _pageController,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: story.userStories.length,
                         itemBuilder: (context, storyIndex) {
                           // final story = getStory.userStories[index];
-                          final story = widget
+                          final storyContent = widget
                               .stories[carouselIndex].userStories[storyIndex];
-                          switch (story.media) {
+                          switch (storyContent.media) {
                             case MediaType.image:
                               return CachedNetworkImage(
-                                imageUrl: story.url,
+                                imageUrl: storyContent.url,
                                 fit: BoxFit.cover,
                               );
                             case MediaType.video:
-                              if (_videoController != null &&
-                                  _videoController.value.isInitialized) {
+                              if (_videoController.value.isInitialized) {
                                 return VideoPlayerWidget(
                                     controller: _videoController);
                               }
@@ -358,8 +377,8 @@ class _StoryPageState extends State<StoryPage>
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
-                        }),
-                  ),
+                        },
+                      )),
                 ),
                 SafeArea(
                   child: Column(
@@ -397,7 +416,8 @@ class _StoryPageState extends State<StoryPage>
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   CachedNetworkImage(
-                                    imageUrl: story.user.profileImage,
+                                    imageUrl: widget.stories[carouselIndex].user
+                                        .profileImage,
                                     imageBuilder: (context, imageProvider) =>
                                         Container(
                                       height: 32,
@@ -411,11 +431,6 @@ class _StoryPageState extends State<StoryPage>
                                       ),
                                     ),
                                   ),
-                                  // CircleAvatar(
-                                  //   radius: 16,
-                                  //   backgroundImage:
-                                  //       NetworkImage(story.user.profileImage),
-                                  // ),
                                   Padding(
                                     padding: const EdgeInsets.only(left: 12),
                                     child: Column(
@@ -428,7 +443,10 @@ class _StoryPageState extends State<StoryPage>
                                                 TextStyle(color: Colors.black),
                                             children: [
                                               TextSpan(
-                                                text: story.user.name,
+                                                text: widget
+                                                    .stories[carouselIndex]
+                                                    .user
+                                                    .name,
                                                 style: const TextStyle(
                                                   color: Colors.white,
                                                   fontSize: 13,
@@ -437,7 +455,7 @@ class _StoryPageState extends State<StoryPage>
                                               ),
                                               TextSpan(
                                                 text:
-                                                    '  ${story.userStories[_currentIndex].sentTimestamp.toString()}h',
+                                                    '  ${widget.stories[carouselIndex].userStories[_currentIndex].sentTimestamp.toString()}h',
                                                 style: const TextStyle(
                                                   color: Colors.white60,
                                                   fontSize: 13,
@@ -482,7 +500,7 @@ class _StoryPageState extends State<StoryPage>
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  const Expanded(
+                                  Expanded(
                                     child: Align(
                                       alignment: Alignment.bottomLeft,
                                       child: SizedBox(
@@ -490,7 +508,7 @@ class _StoryPageState extends State<StoryPage>
                                         child: TextField(
                                           maxLines: 1,
                                           decoration: InputDecoration(
-                                            border: OutlineInputBorder(
+                                            border: const OutlineInputBorder(
                                               borderRadius: BorderRadius.all(
                                                   Radius.circular(16.0)),
                                               borderSide: BorderSide(
@@ -499,11 +517,13 @@ class _StoryPageState extends State<StoryPage>
                                               ),
                                             ),
                                             filled: true,
-                                            hintStyle: TextStyle(
+                                            hintStyle: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 13,
                                             ),
-                                            hintText: "Send message",
+                                            hintText:
+                                                AppLocalizations.of(context)!
+                                                    .sendMessage,
                                             fillColor: Colors.transparent,
                                           ),
                                         ),

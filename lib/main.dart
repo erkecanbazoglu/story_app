@@ -2,22 +2,24 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:test_app/data/repos/stories_repo.dart';
-import 'package:test_app/data/repos/story_repo.dart';
-import 'package:test_app/services/shared_preferences.dart';
+
+import 'data/repos/stories_repo.dart';
 import 'data/repos/story_content_repo.dart';
+import 'data/repos/story_repo.dart';
 import 'logic/bloc/stories/stories_bloc.dart';
 import 'logic/bloc/story/story_bloc.dart';
 import 'logic/bloc/story_content/story_content_bloc.dart';
 import 'logic/cubit/internet_cubit.dart';
-import 'ui/services/router_service.dart';
-import 'logic/bloc/user_bloc.dart';
+import 'services/navigator_service.dart';
+import 'services/shared_preferences.dart';
 import 'ui/screens/welcome_page.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  ///Device orientation and Shared Preferences initialization
   await Future.wait([
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
     SharedPreferencesService.init()
@@ -59,7 +61,7 @@ class MyApp extends StatelessWidget {
         title: 'Story App',
         initialRoute: '/',
         debugShowCheckedModeBanner: false,
-        navigatorKey: RouterService().navigatorKey,
+        navigatorKey: NavigatorService().navigatorKey,
         supportedLocales: const [
           Locale('tr', ''), // Turkish, no country code
           Locale('en', ''), // English, no country code

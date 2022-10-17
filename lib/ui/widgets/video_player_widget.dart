@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+///Video Player Widget
+
 class VideoPlayerWidget extends StatelessWidget {
   final VideoPlayerController controller;
 
@@ -15,7 +17,7 @@ class VideoPlayerWidget extends StatelessWidget {
           alignment: Alignment.center,
           child: buildVideo(),
         )
-      : Center(
+      : const Center(
           child: CircularProgressIndicator(),
         );
 

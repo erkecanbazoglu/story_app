@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+///Animated Progress Bar Widget
+
 class AnimatedBar extends StatelessWidget {
   final AnimationController animationController;
   final int position;

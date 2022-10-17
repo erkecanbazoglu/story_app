@@ -1,3 +1,5 @@
+///Sample images from Pexels
+
 const List<String> photoList = [
   "https://images.pexels.com/photos/13442289/pexels-photo-13442289.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
   "https://images.pexels.com/photos/13888663/pexels-photo-13888663.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",

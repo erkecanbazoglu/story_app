@@ -1,8 +1,11 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
+
+import 'package:http/http.dart' as http;
 
 import '../../constants/constants.dart';
 import '../../constants/sample_images.dart';
+
+///Photo Provider
 
 class PhotosAPI {
   ///Later not used due to image quality

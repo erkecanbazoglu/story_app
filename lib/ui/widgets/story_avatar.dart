@@ -3,21 +3,21 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/story.dart';
 
-class StoryWidget extends StatefulWidget {
+class StoryAvatar extends StatefulWidget {
   final Story story;
   final VoidCallback onStoryTap;
 
-  const StoryWidget({
+  const StoryAvatar({
     Key? key,
     required this.story,
     required this.onStoryTap,
   }) : super(key: key);
 
   @override
-  State<StoryWidget> createState() => _StoryWidgetState();
+  State<StoryAvatar> createState() => _StoryAvatarState();
 }
 
-class _StoryWidgetState extends State<StoryWidget> {
+class _StoryAvatarState extends State<StoryAvatar> {
   late Story story;
 
   @override
@@ -63,22 +63,21 @@ class _StoryWidgetState extends State<StoryWidget> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(2),
-                  child:
-                      // Hero(
-                      ///Hero for the specified user tag
-                      // tag: story.id,
-                      Center(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: imageProvider,
-                          fit: BoxFit.cover,
+                  child: Hero(
+                    //Hero for the specified user tag
+                    tag: story.id,
+                    child: Center(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: imageProvider,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  // ),
                 ),
               ),
             ),

@@ -1,5 +1,6 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferencesService {
   static late SharedPreferences _preferences;
@@ -14,18 +15,19 @@ class SharedPreferencesService {
     await _preferences.setBool(storyContent, true);
   }
 
+  static Future setStoryContentUnSeen(int storyContentId) async {
+    String storyContent = storyContentId.toString();
+    await _preferences.setBool(storyContent, false);
+  }
+
   static bool getStoryContentSeen(int storyContentId) {
     String storyContent = storyContentId.toString();
     final bool? isStoryContentSeen = _preferences.getBool(storyContent);
+    //Make all Story Content Unseen (Does not apply to all)
+    //Run a few times as some images and videos are from internet
+    // setStoryContentUnSeen(storyContentId);
     return isStoryContentSeen ?? false;
   }
-
-  // static Future setAllStoryContentUnseen(List<int> storyContentIds) async {
-  //   for (int i = 0; i < storyContentIds.length; i++) {
-  //     String storyContent = storyContentIds[i].toString();
-  //     await _preferences.setBool(storyContent, false);
-  //   }
-  // }
 
   //Story Content Timestamp Preferences
   static Future setStoryContentTimestamp(

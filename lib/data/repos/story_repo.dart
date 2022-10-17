@@ -1,8 +1,11 @@
-import 'package:test_app/data/repos/story_content_repo.dart';
-import 'package:test_app/data/repos/user_repo.dart';
+import 'dart:math' as math;
+
 import '../models/story.dart';
 import '../models/user.dart';
-import 'dart:math' as math;
+import 'story_content_repo.dart';
+import 'user_repo.dart';
+
+///Story Repo
 
 class StoryRepo {
   StoryRepo();

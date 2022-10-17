@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:test_app/logic/cubit/internet_cubit.dart';
-import 'package:test_app/ui/screens/story_page2.dart';
-import 'package:test_app/ui/screens/story_page3.dart';
+import '../../logic/cubit/internet_cubit.dart';
+import '../../services/navigator_service.dart';
 import '../../logic/bloc/stories/stories_bloc.dart';
 import '../../logic/bloc/story/story_bloc.dart';
-import 'story_page.dart';
-import '../widgets/story_widget.dart';
+import '../widgets/story_avatar.dart';
 import '../../data/models/story.dart';
 import '../widgets/photo_post_widget.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -31,6 +30,29 @@ class _HomePageState extends State<HomePage> {
     storiesBloc.add(const GetStories());
   }
 
+  ///Stories are arranged whether seen or not
+  void arrangeSeenStories() {
+    List<Story> seen = [];
+    List<Story> unSeen = [];
+    for (int i = 0; i < stories.length; i++) {
+      bool isStorySeen = true;
+      for (int k = 0; k < stories[i].userStories.length; k++) {
+        if (stories[i].userStories[k].contentSeen == false) {
+          isStorySeen = false;
+          break;
+        }
+      }
+      if (isStorySeen) {
+        stories[i].storySeen = true;
+      }
+    }
+    setState(() {
+      stories;
+    });
+  }
+
+  ///Getting the scroll index for sliding to the correct story avatar
+  ///after navigation pop occurs from the Story Page
   double getScrollIndex(int storyIndex) {
     double screenWidth = MediaQuery.of(context).size.width;
     double rightOffset = (screenWidth / 70).floorToDouble();
@@ -45,8 +67,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  //New Functions
-
+  ///Opens the related bloc content
   void openStory(int storyIndex) {
     final storyBloc = BlocProvider.of<StoryBloc>(context);
     storyBloc.add(OpenStory(stories, storyIndex));
@@ -55,6 +76,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
+    ///Getting the stories
     getStories();
   }
 
@@ -124,7 +147,7 @@ class _HomePageState extends State<HomePage> {
                   final internetCubit = BlocProvider.of<InternetCubit>(context);
                   String snackbarText =
                       internetCubit.state is InternetDisconnected
-                          ? "Internet error!"
+                          ? AppLocalizations.of(context)!.internetError
                           : state.message!;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -132,10 +155,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 }
-
-                //     if (state is StoriesLoaded) {
-                //   context.read<ThemeCubit>().updateTheme(state.weather);
-                // }
               },
               builder: (context, state) {
                 if (state is StoriesLoading) {
@@ -148,7 +167,7 @@ class _HomePageState extends State<HomePage> {
                 } else if (state is StoriesError) {
                   if (BlocProvider.of<InternetCubit>(context).state
                       is InternetDisconnected) {
-                    return const Text("Internet error!");
+                    return Text(AppLocalizations.of(context)!.internetError);
                   } else {
                     return Text(state.message!);
                   }
@@ -162,28 +181,23 @@ class _HomePageState extends State<HomePage> {
                       physics: const BouncingScrollPhysics(),
                       itemCount: stories.length,
                       itemBuilder: (context, index) {
-                        return StoryWidget(
+                        return StoryAvatar(
                           story: stories[index],
                           onStoryTap: () async {
-                            // openStory(index);
-                            // late int storyIndex;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => StoryPage3(
-                                  stories: stories,
-                                  storyIndex: index,
-                                ),
-                              ),
-                            );
-                            // _storyController.jumpTo(getScrollIndex(storyIndex));
+                            int storyIndex = await NavigatorService()
+                                .navigateTo(Pages.storyPage, data: {
+                              'stories': stories,
+                              'storyIndex': index
+                            });
+                            arrangeSeenStories();
+                            _storyController.jumpTo(getScrollIndex(storyIndex));
                           },
                         );
                       },
                     ),
                   );
                 }
-                return const Text('Something went wrong!');
+                return Text(AppLocalizations.of(context)!.somethingWentWrong);
               },
             ),
           ),

@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../data/models/data.dart';
+import '../../constants/data.dart';
 import '../../data/models/user.dart';
 
 part '../bloc/user_state.dart';
+
+///Deprecated
 
 enum UserEvent {
   restricted,

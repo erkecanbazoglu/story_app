@@ -1,5 +1,6 @@
-import 'story.dart';
-import 'user.dart';
+import '../data/models/user.dart';
+
+///Deprecated Sample Data
 
 final User user = User(
   id: 1,

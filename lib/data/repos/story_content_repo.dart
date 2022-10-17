@@ -1,8 +1,11 @@
+import 'dart:math' as math;
+
 import '../../services/shared_preferences.dart';
 import '../models/story.dart';
 import '../providers/photos.dart';
 import '../providers/videos.dart';
-import 'dart:math' as math;
+
+///Story Content Repo
 
 class StoryContentRepo {
   StoryContentRepo();

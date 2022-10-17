@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import 'package:flutter/material.dart';
 
 class PhotoPost extends StatefulWidget {
   const PhotoPost({required this.post});

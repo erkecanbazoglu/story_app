@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../logic/cubit/internet_cubit.dart';
 
 class FirstPage extends StatefulWidget {
@@ -13,36 +13,32 @@ class _FirstPageState extends State<FirstPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("First Page"),
+        title: Text(AppLocalizations.of(context)!.firstPage),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            Text(
+              AppLocalizations.of(context)!.internetConnection,
             ),
-            // Text(
-            //   "1",
-            //   style: Theme.of(context).textTheme.headline4,
-            // ),
             BlocBuilder<InternetCubit, InternetState>(
               builder: (context, state) {
                 if (state is InternetConnected &&
                     state.connectionType == ConnectionType.Wifi) {
                   return Text(
-                    "Wifi",
+                    AppLocalizations.of(context)!.wifi,
                     style: Theme.of(context).textTheme.headline4,
                   );
                 } else if (state is InternetConnected &&
                     state.connectionType == ConnectionType.Mobile) {
                   return Text(
-                    "Mobile",
+                    AppLocalizations.of(context)!.mobile,
                     style: Theme.of(context).textTheme.headline4,
                   );
                 } else if (state is InternetDisconnected) {
                   return Text(
-                    "No Internet",
+                    AppLocalizations.of(context)!.noInternet,
                     style: Theme.of(context).textTheme.headline4,
                   );
                 }

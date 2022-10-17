@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
 
-import '../screens/home_page.dart';
-import '../screens/others/fifth_page.dart';
-import '../screens/others/first_page.dart';
-import '../screens/others/fourth_page.dart';
-import '../screens/others/second_page.dart';
-import '../screens/others/third_page.dart';
+import '../ui/screens/home_page.dart';
+import '../ui/screens/others/fifth_page.dart';
+import '../ui/screens/others/first_page.dart';
+import '../ui/screens/others/fourth_page.dart';
+import '../ui/screens/others/second_page.dart';
+import '../ui/screens/others/third_page.dart';
+import '../ui/screens/story_page.dart';
 
-class RouterService {
+class NavigatorService {
+  static final NavigatorService _navigatorService =
+      NavigatorService._internal();
+
+  factory NavigatorService() => _navigatorService;
+
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  NavigatorService._internal();
 
   Future<dynamic>? navigateTo(Pages routeName, {dynamic data}) {
     switch (routeName) {
       case Pages.homePage:
         return navigatorKey.currentState?.push(MaterialPageRoute(
-            builder: (context) => HomePage(),
+            builder: (context) => const HomePage(),
             settings: RouteSettings(
                 name: Pages.homePage.toString(), arguments: data)));
       case Pages.firstPage:
@@ -42,6 +50,14 @@ class RouterService {
             builder: (context) => FifthPage(),
             settings: RouteSettings(
                 name: Pages.fifthPage.toString(), arguments: data)));
+      case Pages.storyPage:
+        return navigatorKey.currentState?.push(MaterialPageRoute(
+            builder: (context) => StoryPage(
+                  stories: data['stories'],
+                  storyIndex: data['storyIndex'],
+                ),
+            settings: RouteSettings(
+                name: Pages.storyPage.toString(), arguments: data)));
     }
   }
 }
@@ -53,4 +69,5 @@ enum Pages {
   thirdPage,
   fourthPage,
   fifthPage,
+  storyPage,
 }

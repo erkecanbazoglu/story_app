@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
+///Deprecated Progress Bar
+
 class ProgressBar extends StatelessWidget {
   final double percentWatched;
   const ProgressBar({Key? key, required this.percentWatched}) : super(key: key);

@@ -1,5 +1,16 @@
 {
     "helloWorld": "Merhaba Dünya!",
-    "test": "Test",
-    "hello": "Merhaba"
+    "internetError": "İnternet hatası!",
+    "internetConnection": "İnternet Bağlantısı:",
+    "wifi": "Wifi",
+    "mobile": "Mobil",
+    "noInternet": "İnternet yok!",
+    "pushedButtonText": "Butona bu kadar bastınız:",
+    "firstPage": "Birinci Sayfa",
+    "secondPage": "İkinci Sayfa",
+    "thirdPage": "Üçüncü Sayfa",
+    "fourthPage": "Dördüncü Sayfa",
+    "fifthPage": "Beşinci Sayfa",
+    "sendMessage": "Mesaj Gönder",
+    "somethingWentWrong": "Bir şeyler yanlış gitti!"
 }

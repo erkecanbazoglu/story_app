@@ -1,18 +1,22 @@
 import 'user.dart';
 
+///Story Model
+
 class Story {
   final int id;
   final User user;
   final List<StoryContent> userStories;
-  final bool storySeen;
+  bool storySeen;
 
-  const Story({
+  Story({
     required this.id,
     required this.user,
     required this.userStories,
     required this.storySeen,
   });
 }
+
+///Stroy Content Model
 
 enum MediaType {
   image,
@@ -25,9 +29,9 @@ class StoryContent {
   final MediaType media;
   final Duration duration;
   final int sentTimestamp;
-  final bool contentSeen;
+  bool contentSeen;
 
-  const StoryContent({
+  StoryContent({
     required this.id,
     required this.url,
     required this.media,

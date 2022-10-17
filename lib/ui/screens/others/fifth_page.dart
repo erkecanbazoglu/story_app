@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class FifthPage extends StatefulWidget {
   @override
@@ -10,14 +11,14 @@ class _FifthPageState extends State<FifthPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Fifth Page"),
+        title: Text(AppLocalizations.of(context)!.fifthPage),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            Text(
+              AppLocalizations.of(context)!.pushedButtonText,
             ),
             Text(
               "5",
