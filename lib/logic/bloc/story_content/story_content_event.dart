@@ -13,38 +13,36 @@ abstract class StoryContentEvent extends Equatable {
 //ResumeStoryContent
 //NextStoryContent
 //PreviousStoryContent
+//ResetStoryContent
 
 class PlayStoryContent extends StoryContentEvent {
   final Story story;
   final int storyContentIndex;
-  final PlayState playState;
 
-  const PlayStoryContent(this.story, this.storyContentIndex, this.playState);
+  const PlayStoryContent(this.story, this.storyContentIndex);
 
   @override
-  List<Object> get props => [story, storyContentIndex, playState];
+  List<Object> get props => [story, storyContentIndex];
 }
 
 class PauseStoryContent extends StoryContentEvent {
   final Story story;
   final int storyContentIndex;
-  final PlayState playState;
 
-  const PauseStoryContent(this.story, this.storyContentIndex, this.playState);
+  const PauseStoryContent(this.story, this.storyContentIndex);
 
   @override
-  List<Object> get props => [story, storyContentIndex, playState];
+  List<Object> get props => [story, storyContentIndex];
 }
 
 class ResumeStoryContent extends StoryContentEvent {
   final Story story;
   final int storyContentIndex;
-  final PlayState playState;
 
-  const ResumeStoryContent(this.story, this.storyContentIndex, this.playState);
+  const ResumeStoryContent(this.story, this.storyContentIndex);
 
   @override
-  List<Object> get props => [story, storyContentIndex, playState];
+  List<Object> get props => [story, storyContentIndex];
 }
 
 class NextStoryContent extends StoryContentEvent {
@@ -65,4 +63,11 @@ class PreviousStoryContent extends StoryContentEvent {
 
   @override
   List<Object> get props => [story, storyContentIndex];
+}
+
+class ResetStoryContent extends StoryContentEvent {
+  const ResetStoryContent();
+
+  @override
+  List<Object> get props => [];
 }

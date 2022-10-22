@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../logic/bloc/story_content/story_content_bloc.dart';
 import '../../logic/cubit/internet_cubit.dart';
 import '../../services/navigator_service.dart';
 import '../../logic/bloc/stories/stories_bloc.dart';
@@ -70,7 +71,9 @@ class _HomePageState extends State<HomePage> {
   ///Opens the related bloc content
   void openStory(int storyIndex) {
     final storyBloc = BlocProvider.of<StoryBloc>(context);
+    final storyContentBloc = BlocProvider.of<StoryContentBloc>(context);
     storyBloc.add(OpenStory(stories, storyIndex));
+    storyContentBloc.add(PlayStoryContent(stories[storyIndex], 0));
   }
 
   @override
@@ -184,6 +187,7 @@ class _HomePageState extends State<HomePage> {
                         return StoryAvatar(
                           story: stories[index],
                           onStoryTap: () async {
+                            openStory(index);
                             int storyIndex = await NavigatorService()
                                 .navigateTo(Pages.storyPage, data: {
                               'stories': stories,
