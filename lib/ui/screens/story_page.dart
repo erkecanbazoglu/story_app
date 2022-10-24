@@ -3,6 +3,7 @@ import 'package:dismissible_page/dismissible_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:test_app/logic/bloc/stories/stories_bloc.dart';
 // import 'package:flutter_carousel_slider/carousel_slider.dart';
 import './carousel/carousel_slider.dart';
 import 'package:test_app/logic/bloc/story/story_bloc.dart';
@@ -66,13 +67,19 @@ class _StoryPageState extends State<StoryPage>
   }
 
   ///Plays the Story Content
-  void _playStory(StoryContent? storyContent) async {
+  void _playStory(StoryContent storyContent) async {
     //Stop the animation and reset the animation bar
     _animationController.stop();
     _animationController.reset();
 
-    SharedPreferencesService.setStoryContentSeen(storyContent!.id);
-    storyContent.contentSeen = true;
+    //Story Seen with Shared Preferences (Deprecated)
+    // SharedPreferencesService.setStoryContentSeen(storyContent!.id);
+    // storyContent.contentSeen = true;
+
+    //Story Seen with Hydrated Storage
+    final storiesBloc = BlocProvider.of<StoriesBloc>(context);
+    storiesBloc.add(MakeStoriesSeen(widget.stories, storyBloc.state.storyIndex,
+        storyContentBloc.state.storyContentIndex));
 
     switch (storyContent.media) {
       case MediaType.image:
@@ -159,8 +166,8 @@ class _StoryPageState extends State<StoryPage>
     var storyState = storyBloc.state;
 
     if (storyState is StoryOpened) {
-      print("index: " + storyState.storyIndex.toString());
-      print("new index: " + newStoryIndex.toString());
+      // print("index: " + storyState.storyIndex.toString());
+      // print("new index: " + newStoryIndex.toString());
 
       if (storyState.storyIndex != newStoryIndex) {
         _openStoryEvent(newStoryIndex);

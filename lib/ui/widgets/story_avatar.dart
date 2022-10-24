@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/story.dart';
 
-class StoryAvatar extends StatefulWidget {
+class StoryAvatar extends StatelessWidget {
   final Story story;
   final VoidCallback onStoryTap;
 
@@ -14,22 +14,9 @@ class StoryAvatar extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<StoryAvatar> createState() => _StoryAvatarState();
-}
-
-class _StoryAvatarState extends State<StoryAvatar> {
-  late Story story;
-
-  @override
-  void initState() {
-    super.initState();
-    story = widget.story;
-  }
-
-  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: widget.onStoryTap,
+      onTap: onStoryTap,
       child: CachedNetworkImage(
         imageUrl: story.user.profileImage,
         imageBuilder: (context, imageProvider) => Container(
