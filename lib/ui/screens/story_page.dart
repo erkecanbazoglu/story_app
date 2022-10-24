@@ -145,11 +145,28 @@ class _StoryPageState extends State<StoryPage>
   // }
 
   ///Move to new story after carousel page slide
+  // void _moveToNewStory(int newStoryIndex) {
+  //   var storyState = storyBloc.state;
+
+  //   if (storyState is StoryOpened) {
+  //     print("index: " + storyState.storyIndex.toString());
+  //     print("new index: " + newStoryIndex.toString());
+  //     _openStoryEvent(newStoryIndex);
+  //   }
+  // }
+
   void _moveToNewStory(int newStoryIndex) {
     var storyState = storyBloc.state;
 
     if (storyState is StoryOpened) {
-      _openStoryEvent(widget.stories, newStoryIndex);
+      print("index: " + storyState.storyIndex.toString());
+      print("new index: " + newStoryIndex.toString());
+
+      if (storyState.storyIndex != newStoryIndex) {
+        _openStoryEvent(newStoryIndex);
+      } else {
+        _resumeStoryContentEvent();
+      }
     }
   }
 
@@ -195,32 +212,23 @@ class _StoryPageState extends State<StoryPage>
 
   ///StoryBloc Events
 
-  void _openStoryEvent(List<Story> stories, int storyIndex) {
-    storyBloc.add(OpenStory(stories, storyIndex));
+  void _openStoryEvent(int storyIndex) {
+    storyBloc.add(OpenStory(widget.stories, storyIndex));
   }
 
   void _closeStoryEvent() {
     var storyState = storyBloc.state;
-
-    if (storyState is StoryOpened) {
-      storyBloc.add(CloseStory(widget.stories, storyState.storyIndex));
-    }
+    storyBloc.add(CloseStory(widget.stories, storyState.storyIndex));
   }
 
   void _nextStoryEvent() {
     var storyState = storyBloc.state;
-
-    if (storyState is StoryOpened) {
-      storyBloc.add(NextStory(widget.stories, storyState.storyIndex));
-    }
+    storyBloc.add(NextStory(widget.stories, storyState.storyIndex));
   }
 
   void _previousStoryEvent() {
     var storyState = storyBloc.state;
-
-    if (storyState is StoryOpened) {
-      storyBloc.add(PreviousStory(widget.stories, storyState.storyIndex));
-    }
+    storyBloc.add(PreviousStory(widget.stories, storyState.storyIndex));
   }
 
   ///StoryContentBloc Events
@@ -228,56 +236,37 @@ class _StoryPageState extends State<StoryPage>
   void _playStoryContentEvent() {
     var storyState = storyBloc.state;
 
-    if (storyState is StoryOpened) {
-      ///Change later
-      int tempCurrentIndex = 0;
-      storyContentBloc
-          .add(PlayStoryContent(storyState.story, tempCurrentIndex));
-    }
+    ///Change later
+    int tempCurrentIndex = 0;
+    storyContentBloc.add(PlayStoryContent(storyState.story, tempCurrentIndex));
   }
 
   void _pauseStoryContentEvent() {
     var storyContentState = storyContentBloc.state;
     var storyState = storyBloc.state;
-
-    if (storyState is StoryOpened && storyContentState is StoryContentPlayed) {
-      final storyContentBloc = BlocProvider.of<StoryContentBloc>(context);
-      storyContentBloc.add(PauseStoryContent(
-          storyState.story, storyContentState.storyContentIndex));
-    }
+    storyContentBloc.add(PauseStoryContent(
+        storyState.story, storyContentState.storyContentIndex));
   }
 
   void _resumeStoryContentEvent() {
     var storyContentState = storyContentBloc.state;
     var storyState = storyBloc.state;
-
-    if (storyState is StoryOpened && storyContentState is StoryContentPlayed) {
-      final storyContentBloc = BlocProvider.of<StoryContentBloc>(context);
-      storyContentBloc.add(ResumeStoryContent(
-          storyState.story, storyContentState.storyContentIndex));
-    }
+    storyContentBloc.add(ResumeStoryContent(
+        storyState.story, storyContentState.storyContentIndex));
   }
 
   void _nextStoryContentEvent() {
     var storyContentState = storyContentBloc.state;
     var storyState = storyBloc.state;
-
-    if (storyState is StoryOpened && storyContentState is StoryContentPlayed) {
-      final storyContentBloc = BlocProvider.of<StoryContentBloc>(context);
-      storyContentBloc.add(NextStoryContent(
-          storyState.story, storyContentState.storyContentIndex));
-    }
+    storyContentBloc.add(NextStoryContent(
+        storyState.story, storyContentState.storyContentIndex));
   }
 
   void _previousStoryContentEvent() {
     var storyContentState = storyContentBloc.state;
     var storyState = storyBloc.state;
-
-    if (storyState is StoryOpened && storyContentState is StoryContentPlayed) {
-      final storyContentBloc = BlocProvider.of<StoryContentBloc>(context);
-      storyContentBloc.add(PreviousStoryContent(
-          storyState.story, storyContentState.storyContentIndex));
-    }
+    storyContentBloc.add(PreviousStoryContent(
+        storyState.story, storyContentState.storyContentIndex));
   }
 
   @override
@@ -357,6 +346,8 @@ class _StoryPageState extends State<StoryPage>
           listener: (context, state) {
             if (state is StoryContentPlayed) {
               if (state.playState == PlayState.begin) {
+                print("Play State: begin");
+
                 ///Change should animate on first and laters
                 _pageController.animateToPage(state.storyContentIndex,
                     duration: const Duration(milliseconds: 1),
@@ -407,8 +398,9 @@ class _StoryPageState extends State<StoryPage>
                         autoSliderTransitionTime:
                             const Duration(milliseconds: 300),
                         // onSlideChanged: (index) => _moveToNewStory(index),
-                        // onSlideStart: () => _pauseStoryContentEvent(),
+                        onSlideStart: () => _pauseStoryContentEvent(),
                         // onSlideEnd: () => _resumeStoryContentEvent(),
+                        onSlideEnd: (index) => _moveToNewStory(index),
                         slideBuilder: (carouselIndex) {
                           return Stack(
                             children: [
@@ -426,9 +418,11 @@ class _StoryPageState extends State<StoryPage>
                                       controller: _pageController,
                                       physics:
                                           const NeverScrollableScrollPhysics(),
-                                      itemCount:
-                                          storyState.story.userStories.length,
+                                      itemCount: widget.stories[carouselIndex]
+                                          .userStories.length,
                                       itemBuilder: (context, storyIndex) {
+                                        // final storyContent = storyState
+                                        //     .story.userStories[storyIndex];
                                         final storyContent = widget
                                             .stories[carouselIndex]
                                             .userStories[storyIndex];
@@ -546,8 +540,11 @@ class _StoryPageState extends State<StoryPage>
                                                               ),
                                                             ),
                                                             TextSpan(
-                                                              text:
-                                                                  '  ${widget.stories[carouselIndex].userStories[storyContentState.storyContentIndex].sentTimestamp.toString()}h',
+                                                              text: storyState
+                                                                          .storyIndex ==
+                                                                      carouselIndex
+                                                                  ? '  ${storyState.story.userStories[storyContentState.storyContentIndex].sentTimestamp.toString()}h'
+                                                                  : '  ${widget.stories[carouselIndex].userStories[0].sentTimestamp.toString()}h',
                                                               style:
                                                                   const TextStyle(
                                                                 color: Colors

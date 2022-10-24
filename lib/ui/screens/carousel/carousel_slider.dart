@@ -87,7 +87,7 @@ class CarouselSlider extends StatefulWidget {
   final int initialPage;
   final ValueChanged<int>? onSlideChanged;
   final VoidCallback? onSlideStart;
-  final VoidCallback? onSlideEnd;
+  final ValueChanged<int>? onSlideEnd;
   final Clip clipBehavior;
   final CarouselSliderController? controller;
 
@@ -142,7 +142,7 @@ class _CarouselSliderState extends State<CarouselSlider> {
               if (notification is ScrollStartNotification) {
                 widget.onSlideStart?.call();
               } else if (notification is ScrollEndNotification) {
-                widget.onSlideEnd?.call();
+                widget.onSlideEnd?.call(_currentPage ?? 0);
               }
               return true;
             },
