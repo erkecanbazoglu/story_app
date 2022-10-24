@@ -23,6 +23,7 @@ Story _$StoryFromJson(Map<String, dynamic> json) => Story(
           .map((e) => StoryContent.fromJson(e as Map<String, dynamic>))
           .toList(),
       storySeen: json['storySeen'] as bool,
+      storyPlayIndex: json['storyPlayIndex'] as int,
     );
 
 Map<String, dynamic> _$StoryToJson(Story instance) => <String, dynamic>{
@@ -30,6 +31,7 @@ Map<String, dynamic> _$StoryToJson(Story instance) => <String, dynamic>{
       'user': instance.user.toJson(),
       'userStories': instance.userStories.map((e) => e.toJson()).toList(),
       'storySeen': instance.storySeen,
+      'storyPlayIndex': instance.storyPlayIndex,
     };
 
 StoryContent _$StoryContentFromJson(Map<String, dynamic> json) => StoryContent(

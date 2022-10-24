@@ -35,12 +35,14 @@ class Story {
   final User user;
   final List<StoryContent> userStories;
   bool storySeen;
+  int storyPlayIndex;
 
   Story({
     required this.id,
     required this.user,
     required this.userStories,
     required this.storySeen,
+    required this.storyPlayIndex,
   });
 
   /// Connect the generated [_$StoryFromJson] function to the `fromJson`
@@ -52,7 +54,7 @@ class Story {
 
   // @override
   // String toString() =>
-  //     'Story: {id: $id, storySeen: $storySeen, user: $user, userStories: $userStories}';
+  //     'Story: {id: $id, storySeen: $storySeen, user: $user, userStories: $userStories, storyPlayIndex: $storyPlayIndex}';
 }
 
 ///STORY CONTENT MODEL

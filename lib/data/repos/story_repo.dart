@@ -77,6 +77,7 @@ class StoryRepo {
         user: usersList[i],
         userStories: userStoryContents[i],
         storySeen: getStorySeen(userStoryContents[i]),
+        storyPlayIndex: 0,
       );
       stories.add(story);
     }

@@ -21,6 +21,11 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
   ///Open Story Event
 
   Future<void> _onOpenStory(OpenStory event, Emitter<StoryState> emit) async {
+    ///Getting the first unseen Story Content
+    int firstStoryContent =
+        _getFirstUnseenStoryContent(event.stories[event.storyIndex]);
+    event.stories[event.storyIndex].storyPlayIndex = firstStoryContent;
+
     emit(StoryOpened(event.stories[event.storyIndex], event.storyIndex,
         OpenState.playCurrent));
     print("Open Story event: " + state.toString());
@@ -63,5 +68,19 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
           StoryOpened(event.stories[storyIndex], storyIndex, OpenState.closed));
     }
     print("Previous Story event: " + state.toString());
+  }
+
+  ///Getting the First Unseen Index
+
+  int _getFirstUnseenStoryContent(Story story) {
+    int firstStoryContent = 0;
+
+    for (int i = 0; i < story.userStories.length; i++) {
+      if (story.userStories[i].contentSeen == false) {
+        firstStoryContent = i;
+        break;
+      }
+    }
+    return firstStoryContent;
   }
 }

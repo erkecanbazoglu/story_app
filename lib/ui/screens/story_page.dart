@@ -36,7 +36,7 @@ class StoryPage extends StatefulWidget {
 }
 
 class _StoryPageState extends State<StoryPage>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   ///Controllers
   late PageController _pageController;
   late VideoPlayerController _videoController;
@@ -49,7 +49,7 @@ class _StoryPageState extends State<StoryPage>
   late final storyBloc;
   late final storyContentBloc;
 
-  // Others variables
+  ///Others variables
   double? screenWidth;
   double? dx;
 
@@ -165,14 +165,14 @@ class _StoryPageState extends State<StoryPage>
   void _moveToNewStory(int newStoryIndex) {
     var storyState = storyBloc.state;
 
+    _resumeStoryContentEvent();
+
     if (storyState is StoryOpened) {
       // print("index: " + storyState.storyIndex.toString());
       // print("new index: " + newStoryIndex.toString());
 
       if (storyState.storyIndex != newStoryIndex) {
         _openStoryEvent(newStoryIndex);
-      } else {
-        _resumeStoryContentEvent();
       }
     }
   }
@@ -243,9 +243,8 @@ class _StoryPageState extends State<StoryPage>
   void _playStoryContentEvent() {
     var storyState = storyBloc.state;
 
-    ///Change later
-    int tempCurrentIndex = 0;
-    storyContentBloc.add(PlayStoryContent(storyState.story, tempCurrentIndex));
+    int firstStoryContent = storyState.story.storyPlayIndex;
+    storyContentBloc.add(PlayStoryContent(storyState.story, firstStoryContent));
   }
 
   void _pauseStoryContentEvent() {
@@ -285,20 +284,17 @@ class _StoryPageState extends State<StoryPage>
     ///For getting the app lifecycle
     WidgetsBinding.instance?.addObserver(this);
 
-    ///Getting the first unseen story content
-    // getInitialUnseenIndex();
-
     ///Controller initialization
-    // _pageController = PageController(initialPage: 0);
-    _pageController = PageController();
+    _pageController =
+        PageController(initialPage: storyBloc.state.story.storyPlayIndex);
     _animationController = AnimationController(vsync: this);
 
     ///Video controller initialized
     initVideoController();
 
-    // _openStoryEvent(widget.stories, widget.storyIndex);
-    final StoryContent initialStory =
-        widget.stories[widget.storyIndex].userStories[0];
+    final StoryContent initialStory = widget.stories[widget.storyIndex]
+        .userStories[storyBloc.state.story.storyPlayIndex];
+    // _openStoryEvent(widget.storyIndex);
     _playStory(initialStory);
 
     ///Animation Controller listener (for auto page slides)
@@ -353,8 +349,6 @@ class _StoryPageState extends State<StoryPage>
           listener: (context, state) {
             if (state is StoryContentPlayed) {
               if (state.playState == PlayState.begin) {
-                print("Play State: begin");
-
                 ///Change should animate on first and laters
                 _pageController.animateToPage(state.storyContentIndex,
                     duration: const Duration(milliseconds: 1),
@@ -409,6 +403,8 @@ class _StoryPageState extends State<StoryPage>
                         // onSlideEnd: () => _resumeStoryContentEvent(),
                         onSlideEnd: (index) => _moveToNewStory(index),
                         slideBuilder: (carouselIndex) {
+                          // int initialStoryIndex = _getFirstUnseenStoryContent(
+                          //     widget.stories[carouselIndex]);
                           return Stack(
                             children: [
                               GestureDetector(
@@ -460,18 +456,26 @@ class _StoryPageState extends State<StoryPage>
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 12, vertical: 2),
                                       child: Row(
-                                        children: storyState.story.userStories
+                                        children: widget
+                                            .stories[carouselIndex].userStories
                                             .asMap()
                                             .map((index, storyItem) {
                                               return MapEntry(
                                                 index,
                                                 AnimatedBar(
                                                   animationController:
-                                                      _animationController,
+                                                      storyState.storyIndex ==
+                                                              carouselIndex
+                                                          ? _animationController
+                                                          : AnimationController(
+                                                              vsync: this),
                                                   position: index,
                                                   currentIndex:
-                                                      storyContentState
-                                                          .storyContentIndex,
+                                                      storyState.storyIndex ==
+                                                              carouselIndex
+                                                          ? storyContentState
+                                                              .storyContentIndex
+                                                          : 0,
                                                 ),
                                               );
                                             })
