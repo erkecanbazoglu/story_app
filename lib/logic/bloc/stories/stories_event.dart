@@ -9,6 +9,8 @@ abstract class StoriesEvent extends Equatable {
 
 //Events:
 //GetStories
+//UpdateStories
+//MakeStoriesSeen
 //StoriesInternetNone
 
 class GetStories extends StoriesEvent {
@@ -16,6 +18,24 @@ class GetStories extends StoriesEvent {
 
   @override
   List<Object> get props => [];
+}
+
+class UpdateStories extends StoriesEvent {
+  final List<Story> stories;
+  const UpdateStories(this.stories);
+
+  @override
+  List<Object> get props => [stories];
+}
+
+class MakeStoriesSeen extends StoriesEvent {
+  final List<Story> stories;
+  final int storyIndex;
+  final int storyContentIndex;
+  const MakeStoriesSeen(this.stories, this.storyIndex, this.storyContentIndex);
+
+  @override
+  List<Object> get props => [stories, storyIndex, storyContentIndex];
 }
 
 class StoriesInternetNone extends StoriesEvent {

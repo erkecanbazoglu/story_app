@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'data/repos/stories_repo.dart';
 import 'data/repos/story_content_repo.dart';
@@ -19,13 +21,20 @@ import 'ui/screens/welcome_page.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  final storage = await HydratedStorage.build(
+      storageDirectory: await getApplicationDocumentsDirectory());
+
   ///Device orientation and Shared Preferences initialization
   await Future.wait([
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
     SharedPreferencesService.init()
   ]);
-  runApp(
-    MyApp(connectivity: Connectivity()),
+
+  HydratedBlocOverrides.runZoned(
+    () {
+      runApp(MyApp(connectivity: Connectivity()));
+    },
+    storage: storage,
   );
 }
 

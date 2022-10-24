@@ -10,9 +10,13 @@ class StoriesRepo {
   final StoryRepo _storyRepo = StoryRepo();
 
   ///Prepare the final Stories
-  Future<List<Story>> getFinalStories() async {
+  Future<Stories> getFinalStories() async {
     ///Getting the final Stories from Story Repo
-    List<Story> stories = await _storyRepo.getStoryList();
+    List<Story> storiesList = await _storyRepo.getStoryList();
+
+    Stories stories = Stories(
+      stories: storiesList,
+    );
 
     return stories;
   }
