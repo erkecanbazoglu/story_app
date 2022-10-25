@@ -13,6 +13,7 @@ abstract class StoryContentEvent extends Equatable {
 //ResumeStoryContent
 //NextStoryContent
 //PreviousStoryContent
+//FinishStoryContent
 //ResetStoryContent
 
 class PlayStoryContent extends StoryContentEvent {
@@ -63,6 +64,14 @@ class PreviousStoryContent extends StoryContentEvent {
 
   @override
   List<Object> get props => [story, storyContentIndex];
+}
+
+class FinishStoryContent extends StoryContentEvent {
+  final int storyContentIndex;
+  const FinishStoryContent(this.storyContentIndex);
+
+  @override
+  List<Object> get props => [storyContentIndex];
 }
 
 class ResetStoryContent extends StoryContentEvent {

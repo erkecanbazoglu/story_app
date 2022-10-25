@@ -2,10 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dismissible_page/dismissible_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:test_app/logic/bloc/stories/stories_bloc.dart';
-// import 'package:flutter_carousel_slider/carousel_slider.dart';
-import './carousel/carousel_slider.dart';
+import 'package:flutter_carousel_slider/carousel_slider.dart';
+// import './carousel/carousel_slider.dart';
+import '../../services/cache_manager.dart';
 import 'package:test_app/logic/bloc/story/story_bloc.dart';
 import '../../logic/bloc/story_content/story_content_bloc.dart';
 import '../../services/shared_preferences.dart';
@@ -48,25 +48,40 @@ class _StoryPageState extends State<StoryPage>
   ///Bloc
   late final storyBloc;
   late final storyContentBloc;
+  late final storiesBloc;
 
   ///Others variables
+  bool isCarouselChanged = false;
   double? screenWidth;
   double? dx;
 
-  ///Checking for video cache
-  Future<FileInfo?> checkCacheFor(String url) async {
-    final FileInfo? value = await DefaultCacheManager().getFileFromCache(url);
-    return value;
+  ///Initializing the video controller (If not problem occurs on dispose)
+  void _initControllers() {
+    _pageController =
+        PageController(initialPage: storyBloc.state.story.storyPlayIndex);
+    _animationController = AnimationController(vsync: this);
+
+    String initialVideoUrl =
+        "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4";
+
+    for (int i = 0;
+        i < widget.stories[widget.storyIndex].userStories.length;
+        i++) {
+      if (widget.stories[widget.storyIndex].userStories[i].media ==
+          MediaType.video) {
+        initialVideoUrl = widget.stories[widget.storyIndex].userStories[i].url;
+        break;
+      }
+    }
+
+    _videoController = VideoPlayerController.network(initialVideoUrl)
+      ..initialize().then((_) {
+        setState(() {});
+      });
   }
 
-  ///Caches the videos if not cached
-  void cachedForUrl(String url) async {
-    await DefaultCacheManager().getSingleFile(url).then((value) {
-      print('downloaded successfully done for $url');
-    });
-  }
+  ///Play - Pause - Resume the Story Content
 
-  ///Plays the Story Content
   void _playStory(StoryContent storyContent) async {
     //Stop the animation and reset the animation bar
     _animationController.stop();
@@ -88,11 +103,12 @@ class _StoryPageState extends State<StoryPage>
         _animationController.forward();
         break;
       case MediaType.video:
-        final fileInfo = await checkCacheFor(storyContent.url);
+        final fileInfo =
+            await CacheManagerService.checkCacheFor(storyContent.url);
         if (fileInfo == null) {
           _videoController = VideoPlayerController.network(storyContent.url);
           _videoController.initialize().then((value) {
-            cachedForUrl(storyContent.url);
+            CacheManagerService.cachedForUrl(storyContent.url);
             setState(() {
               if (_videoController.value.isInitialized) {
                 //Set the video duration and start the animation
@@ -123,80 +139,6 @@ class _StoryPageState extends State<StoryPage>
     }
   }
 
-  ///Initializing the video controller
-  ///If not problem occurs on dispose
-  void initVideoController() {
-    // if (story.userStories[_currentIndex].media == MediaType.video) {
-    //   _videoController =
-    //       VideoPlayerController.network(story.userStories[_currentIndex].url)
-    //         ..initialize().then((_) {
-    //           setState(() {});
-    //         });
-    // } else {
-    _videoController = VideoPlayerController.network(
-        "https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4")
-      ..initialize().then((_) {
-        setState(() {});
-      });
-    // }
-  }
-
-  ///Gets the first unseen Story Content
-  // void getInitialUnseenIndex() {
-  //   for (int i = 0; i < story.userStories.length; i++) {
-  //     if (story.userStories[i].contentSeen == false) {
-  //       _currentIndex = i;
-  //       break;
-  //     }
-  //   }
-  // }
-
-  ///Move to new story after carousel page slide
-  // void _moveToNewStory(int newStoryIndex) {
-  //   var storyState = storyBloc.state;
-
-  //   if (storyState is StoryOpened) {
-  //     print("index: " + storyState.storyIndex.toString());
-  //     print("new index: " + newStoryIndex.toString());
-  //     _openStoryEvent(newStoryIndex);
-  //   }
-  // }
-
-  void _moveToNewStory(int newStoryIndex) {
-    var storyState = storyBloc.state;
-
-    _resumeStoryContentEvent();
-
-    if (storyState is StoryOpened) {
-      // print("index: " + storyState.storyIndex.toString());
-      // print("new index: " + newStoryIndex.toString());
-
-      if (storyState.storyIndex != newStoryIndex) {
-        _openStoryEvent(newStoryIndex);
-      }
-    }
-  }
-
-  ///Gesture Function: Initial tap move
-  void _onTapDown(TapDownDetails details) {
-    screenWidth = MediaQuery.of(context).size.width;
-    dx = details.globalPosition.dx;
-    _pauseStoryContentEvent();
-  }
-
-  ///Gesture Function: Tap confirmed
-  void _onTap() async {
-    _resumeStoryContentEvent();
-
-    if (dx! < screenWidth! / 3) {
-      _previousStoryContentEvent();
-    } else {
-      _nextStoryContentEvent();
-    }
-  }
-
-  ///Pause - Resume the Story Content
-
   void _pauseStoryContent(storyContent) {
     if (storyContent.media == MediaType.video) {
       if (_videoController.value.isPlaying) {
@@ -220,6 +162,7 @@ class _StoryPageState extends State<StoryPage>
   ///StoryBloc Events
 
   void _openStoryEvent(int storyIndex) {
+    print(storyIndex);
     storyBloc.add(OpenStory(widget.stories, storyIndex));
   }
 
@@ -262,13 +205,23 @@ class _StoryPageState extends State<StoryPage>
   }
 
   void _nextStoryContentEvent() {
+    _animationController.stop();
+    _animationController.reset();
+    _videoController.pause();
+
     var storyContentState = storyContentBloc.state;
     var storyState = storyBloc.state;
     storyContentBloc.add(NextStoryContent(
         storyState.story, storyContentState.storyContentIndex));
   }
 
-  void _previousStoryContentEvent() {
+  void _previousStoryContentEvent() async {
+    _animationController.stop();
+    _animationController.reset();
+    print("hey1");
+    await _videoController.pause();
+    print("hey2");
+
     var storyContentState = storyContentBloc.state;
     var storyState = storyBloc.state;
     storyContentBloc.add(PreviousStoryContent(
@@ -280,17 +233,13 @@ class _StoryPageState extends State<StoryPage>
     super.initState();
     storyBloc = BlocProvider.of<StoryBloc>(context);
     storyContentBloc = BlocProvider.of<StoryContentBloc>(context);
+    storiesBloc = BlocProvider.of<StoriesBloc>(context);
 
     ///For getting the app lifecycle
     WidgetsBinding.instance?.addObserver(this);
 
-    ///Controller initialization
-    _pageController =
-        PageController(initialPage: storyBloc.state.story.storyPlayIndex);
-    _animationController = AnimationController(vsync: this);
-
-    ///Video controller initialized
-    initVideoController();
+    ///Initializing controllers
+    _initControllers();
 
     final StoryContent initialStory = widget.stories[widget.storyIndex]
         .userStories[storyBloc.state.story.storyPlayIndex];
@@ -325,19 +274,19 @@ class _StoryPageState extends State<StoryPage>
     return MultiBlocListener(
       listeners: [
         BlocListener<StoryBloc, StoryState>(
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state is StoryOpened) {
               if (state.openState == OpenState.playCurrent) {
                 _playStoryContentEvent();
               } else if (state.openState == OpenState.playNext) {
-                _playStoryContentEvent();
+                await _carouselController.nextPage();
                 setState(() {
-                  _carouselController.nextPage();
+                  _carouselController;
                 });
               } else if (state.openState == OpenState.playPrev) {
-                _playStoryContentEvent();
+                await _carouselController.previousPage();
                 setState(() {
-                  _carouselController.previousPage();
+                  _carouselController;
                 });
               } else if (state.openState == OpenState.closed) {
                 Navigator.pop(context, state.storyIndex);
@@ -350,9 +299,12 @@ class _StoryPageState extends State<StoryPage>
             if (state is StoryContentPlayed) {
               if (state.playState == PlayState.begin) {
                 ///Change should animate on first and laters
-                _pageController.animateToPage(state.storyContentIndex,
-                    duration: const Duration(milliseconds: 1),
-                    curve: Curves.easeInOut);
+                if (!isCarouselChanged) {
+                  _pageController.animateToPage(state.storyContentIndex,
+                      duration: const Duration(milliseconds: 1),
+                      curve: Curves.easeInOut);
+                }
+                isCarouselChanged = false;
                 _playStory(state.storyContent);
               } else if (state.playState == PlayState.resume) {
                 _resumeStoryContent(state.storyContent);
@@ -400,18 +352,37 @@ class _StoryPageState extends State<StoryPage>
                             const Duration(milliseconds: 300),
                         // onSlideChanged: (index) => _moveToNewStory(index),
                         onSlideStart: () => _pauseStoryContentEvent(),
-                        // onSlideEnd: () => _resumeStoryContentEvent(),
-                        onSlideEnd: (index) => _moveToNewStory(index),
+                        onSlideEnd: (newStoryIndex) {
+                          var storyState = storyBloc.state;
+                          var storyContentState = storyContentBloc.state;
+
+                          if (storyState.storyIndex != newStoryIndex) {
+                            isCarouselChanged = true;
+                            _openStoryEvent(newStoryIndex);
+                          }
+                          if (!isCarouselChanged) {
+                            _resumeStoryContentEvent();
+                          }
+                        },
                         slideBuilder: (carouselIndex) {
-                          // int initialStoryIndex = _getFirstUnseenStoryContent(
-                          //     widget.stories[carouselIndex]);
                           return Stack(
                             children: [
                               GestureDetector(
                                 //get the very first tap event
-                                onTapDown: (details) => _onTapDown(details),
+                                onTapDown: (details) {
+                                  screenWidth =
+                                      MediaQuery.of(context).size.width;
+                                  dx = details.globalPosition.dx;
+                                  _pauseStoryContentEvent();
+                                },
                                 //validate tap event
-                                onTap: () => _onTap(),
+                                onTap: () {
+                                  if (dx! < screenWidth! / 3) {
+                                    _previousStoryContentEvent();
+                                  } else {
+                                    _nextStoryContentEvent();
+                                  }
+                                },
                                 //resume the story
                                 onLongPressEnd: (_) =>
                                     _resumeStoryContentEvent(),

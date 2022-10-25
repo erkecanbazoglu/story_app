@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pull_to_refresh/pull_to_refresh.dart';
 import '../../logic/bloc/story_content/story_content_bloc.dart';
 import '../../logic/cubit/internet_cubit.dart';
 import '../../services/navigator_service.dart';
@@ -22,8 +21,6 @@ class _HomePageState extends State<HomePage> {
   ///Controller
   final ScrollController _customScrollViewController = ScrollController();
   final ScrollController _storyController = ScrollController();
-  final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
   final key = GlobalKey();
 
   ///Bloc
@@ -33,32 +30,6 @@ class _HomePageState extends State<HomePage> {
   ///Others variables
   final List<int> _postList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   late List<Story> stories;
-
-  // void _updateStoriesEvent() async {
-  //   final storiesBloc = BlocProvider.of<StoriesBloc>(context);
-  //   storiesBloc.add(UpdateStories(stories));
-  //   // context.read().add(UpdateStories(stories));
-  //   // await Future.delayed(const Duration(milliseconds: 5000));
-  //   // _refreshController.refreshCompleted();
-  // }
-
-  // void _onLoading() async {
-  //   // monitor network fetch
-  //   // await Future.delayed(const Duration(milliseconds: 3000));
-  //   // if failed,use loadFailed(),if no data return,use LoadNodata()
-  //   // items.add((items.length+1).toString());
-  //   // if(mounted)
-  //   setState(() {
-  //     stories;
-  //   });
-  //   _refreshController.loadComplete();
-  // }
-
-  void _getStories() {
-    // Always provide context for bloc in order to update the UI
-    final storiesBloc = BlocProvider.of<StoriesBloc>(context);
-    storiesBloc.add(const GetStories());
-  }
 
   ///Getting the scroll index for sliding to the correct story avatar
   double getScrollIndex(int storyIndex) {
@@ -75,6 +46,12 @@ class _HomePageState extends State<HomePage> {
     } else {
       return maxScroll;
     }
+  }
+
+  void _getStories() {
+    // Always provide context for bloc in order to update the UI
+    final storiesBloc = BlocProvider.of<StoriesBloc>(context);
+    storiesBloc.add(const GetStories());
   }
 
   ///Opens the related bloc content
@@ -163,10 +140,6 @@ class _HomePageState extends State<HomePage> {
               },
               child: BlocConsumer<StoriesBloc, StoriesState>(
                 listener: (context, state) {
-                  // if (state is StoriesLoaded) {
-                  //   print("loaded again");
-                  //   _refreshController.refreshCompleted();
-                  // } else
                   if (state is StoriesError) {
                     final internetCubit =
                         BlocProvider.of<InternetCubit>(context);

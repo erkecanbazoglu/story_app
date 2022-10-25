@@ -17,6 +17,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
     on<ResumeStoryContent>(_onResumeStoryContent);
     on<NextStoryContent>(_onNextStoryContent);
     on<PreviousStoryContent>(_onPreviousStoryContent);
+    on<FinishStoryContent>(_onFinishStoryContent);
     on<ResetStoryContent>(_onResetStoryContent);
   }
 
@@ -56,7 +57,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       emit(StoryContentPlayed(event.story.userStories[storyContentIndex],
           storyContentIndex, PlayState.begin));
     } else {
-      emit(const StoryContentFinished(PlayState.next));
+      emit(StoryContentFinished(event.storyContentIndex, PlayState.next));
       // emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
       //     event.storyContentIndex, PlayState.next));
     }
@@ -72,11 +73,19 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       emit(StoryContentPlayed(event.story.userStories[storyContentIndex],
           storyContentIndex, PlayState.begin));
     } else {
-      emit(const StoryContentFinished(PlayState.prev));
+      emit(StoryContentFinished(event.storyContentIndex, PlayState.prev));
       // emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
       //     event.storyContentIndex, PlayState.prev));
     }
     print("Previous Story Content event: " + state.toString());
+  }
+
+  ///Finish Story Content Event
+
+  Future<void> _onFinishStoryContent(
+      FinishStoryContent event, Emitter<StoryContentState> emit) async {
+    emit(StoryContentFinished(event.storyContentIndex, PlayState.none));
+    print("Finish Story Content event: " + state.toString());
   }
 
   ///Looks like there is no more need for reset

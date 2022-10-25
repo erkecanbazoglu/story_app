@@ -347,7 +347,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: b0b0825a5b4a5a33d07762c967f578a55289644d
+      resolved-ref: "8feead8637fe164abedd7c97d968f1777737b5be"
       url: "https://github.com/erkecanbazoglu/FlutterCarouselSlider"
     source: git
     version: "1.0.9"
@@ -681,13 +681,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.2.1"
-  pull_to_refresh:
-    dependency: "direct main"
-    description:
-      name: pull_to_refresh
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.0"
   rxdart:
     dependency: transitive
     description:

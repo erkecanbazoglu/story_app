@@ -11,7 +11,6 @@ dependencies:
   cupertino_icons: ^1.0.2
   percent_indicator: ^3.0.1
   dismissible_page: ^0.7.3
-  pull_to_refresh: ^2.0.0
   http: ^0.13.5
   video_player: ^2.4.7
   cached_network_image: ^3.1.0
