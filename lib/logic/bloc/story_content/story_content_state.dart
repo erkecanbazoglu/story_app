@@ -6,6 +6,7 @@ enum PlayState {
   resume,
   next,
   prev,
+  none,
 }
 
 abstract class StoryContentState extends Equatable {
@@ -16,12 +17,13 @@ abstract class StoryContentState extends Equatable {
 }
 
 //States:
-//InitialStoryClosed
+//StoryContentInitial
+//StoryContentPlayed
 //StoryContentPlayed
 //StoryContentError
 
-class StoryClosedInitial extends StoryContentState {
-  const StoryClosedInitial();
+class StoryContentInitial extends StoryContentState {
+  const StoryContentInitial();
 
   @override
   List<Object> get props => [];
@@ -36,6 +38,15 @@ class StoryContentPlayed extends StoryContentState {
 
   @override
   List<Object> get props => [storyContent, storyContentIndex, playState];
+}
+
+class StoryContentFinished extends StoryContentState {
+  final int storyContentIndex;
+  final PlayState playState;
+  const StoryContentFinished(this.storyContentIndex, this.playState);
+
+  @override
+  List<Object> get props => [storyContentIndex, playState];
 }
 
 class StoryContentError extends StoryContentState {

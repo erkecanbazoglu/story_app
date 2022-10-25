@@ -9,20 +9,23 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
+  percent_indicator: ^3.0.1
+  dismissible_page: ^0.7.3
   http: ^0.13.5
   video_player: ^2.4.7
   cached_network_image: ^3.1.0
   flutter_cache_manager: ^3.3.0
-  percent_indicator: ^3.0.1
-  dismissible_page: ^0.7.3
+  connectivity_plus: ^2.3.9
   bloc: ^8.1.0
   flutter_bloc: ^8.1.1
-  connectivity_plus: ^2.3.9
+  equatable: ^2.0.5
   shared_preferences: ^2.0.15
+  hydrated_bloc: ^8.1.0
+  path_provider: ^2.0.11
+  json_annotation: ^4.0.0
   flutter_localizations:
     sdk: flutter
   intl: ^0.17.0
-  equatable: ^2.0.5
   flutter_carousel_slider:
     git:
       url: https://github.com/erkecanbazoglu/FlutterCarouselSlider
@@ -33,6 +36,8 @@ dev_dependencies:
   flutter_lints: ^1.0.0
   test: ^1.19.0
   bloc_test: ^9.1.0
+  build_runner: ^2.0.0
+  json_serializable: ^6.0.0
 
 flutter:
   generate: true

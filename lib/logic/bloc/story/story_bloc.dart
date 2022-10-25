@@ -21,29 +21,66 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
   ///Open Story Event
 
   Future<void> _onOpenStory(OpenStory event, Emitter<StoryState> emit) async {
-    emit(StoryOpened(event.stories[event.storyIndex], event.storyIndex));
-    print("Open event: " + state.toString());
+    ///Getting the first unseen Story Content
+    int firstStoryContent =
+        _getFirstUnseenStoryContent(event.stories[event.storyIndex]);
+    event.stories[event.storyIndex].storyPlayIndex = firstStoryContent;
+
+    emit(StoryOpened(event.stories[event.storyIndex], event.storyIndex,
+        OpenState.playCurrent));
+    print("Open Story event: " + state.toString());
   }
 
   ///CLose Story Event
 
   Future<void> _onCloseStory(CloseStory event, Emitter<StoryState> emit) async {
-    emit(StoryClosed(event.stories[event.storyIndex], event.storyIndex));
-    print("Close event: " + state.toString());
+    int storyIndex = event.storyIndex;
+    emit(StoryOpened(event.stories[storyIndex], storyIndex, OpenState.closed));
+    print("Close Story event: " + state.toString());
   }
 
   ///Next Story Event
 
   Future<void> _onNextStory(NextStory event, Emitter<StoryState> emit) async {
-    emit(StoryOpened(event.stories[event.storyIndex], event.storyIndex));
-    print("Next event: " + state.toString());
+    if (event.storyIndex < event.stories.length - 1) {
+      int storyIndex = event.storyIndex + 1;
+      emit(StoryOpened(
+          event.stories[storyIndex], storyIndex, OpenState.playNext));
+    } else {
+      int storyIndex = event.storyIndex;
+      emit(
+          StoryOpened(event.stories[storyIndex], storyIndex, OpenState.closed));
+    }
+    print("Next Story event: " + state.toString());
   }
 
   ///Previous Story Event
 
   Future<void> _onPreviousStory(
       PreviousStory event, Emitter<StoryState> emit) async {
-    emit(StoryOpened(event.stories[event.storyIndex], event.storyIndex));
-    print("Previous event: " + state.toString());
+    if (event.storyIndex > 0) {
+      int storyIndex = event.storyIndex - 1;
+      emit(StoryOpened(
+          event.stories[storyIndex], storyIndex, OpenState.playPrev));
+    } else {
+      int storyIndex = event.storyIndex;
+      emit(
+          StoryOpened(event.stories[storyIndex], storyIndex, OpenState.closed));
+    }
+    print("Previous Story event: " + state.toString());
+  }
+
+  ///Getting the First Unseen Index
+
+  int _getFirstUnseenStoryContent(Story story) {
+    int firstStoryContent = 0;
+
+    for (int i = 0; i < story.userStories.length; i++) {
+      if (story.userStories[i].contentSeen == false) {
+        firstStoryContent = i;
+        break;
+      }
+    }
+    return firstStoryContent;
   }
 }

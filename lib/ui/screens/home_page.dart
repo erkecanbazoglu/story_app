@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../logic/bloc/story_content/story_content_bloc.dart';
 import '../../logic/cubit/internet_cubit.dart';
 import '../../services/navigator_service.dart';
 import '../../logic/bloc/stories/stories_bloc.dart';
@@ -17,46 +18,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  ///Controller
   final ScrollController _customScrollViewController = ScrollController();
   final ScrollController _storyController = ScrollController();
   final key = GlobalKey();
-  //Just a temp list with 10 items
+
+  ///Bloc
+  late final storyBloc;
+  late final storyContentBloc;
+
+  ///Others variables
   final List<int> _postList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   late List<Story> stories;
 
-  void getStories() {
-    // Always provide context for bloc in order to update the UI
-    final storiesBloc = BlocProvider.of<StoriesBloc>(context);
-    storiesBloc.add(const GetStories());
-  }
-
-  ///Stories are arranged whether seen or not
-  void arrangeSeenStories() {
-    List<Story> seen = [];
-    List<Story> unSeen = [];
-    for (int i = 0; i < stories.length; i++) {
-      bool isStorySeen = true;
-      for (int k = 0; k < stories[i].userStories.length; k++) {
-        if (stories[i].userStories[k].contentSeen == false) {
-          isStorySeen = false;
-          break;
-        }
-      }
-      if (isStorySeen) {
-        stories[i].storySeen = true;
-      }
-    }
-    setState(() {
-      stories;
-    });
-  }
-
   ///Getting the scroll index for sliding to the correct story avatar
-  ///after navigation pop occurs from the Story Page
   double getScrollIndex(int storyIndex) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double rightOffset = (screenWidth / 70).floorToDouble();
-    double maxScroll = (stories.length * 70) - rightOffset;
+    double maxAvatar = (screenWidth / 70).floorToDouble();
+    double rightOffset = maxAvatar * 70;
+    double maxScroll =
+        ((stories.length - (maxAvatar + 1)) * 70) + (screenWidth - rightOffset);
 
     if (storyIndex == 0) {
       return 0;
@@ -67,18 +48,28 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _getStories() {
+    // Always provide context for bloc in order to update the UI
+    final storiesBloc = BlocProvider.of<StoriesBloc>(context);
+    storiesBloc.add(const GetStories());
+  }
+
   ///Opens the related bloc content
   void openStory(int storyIndex) {
-    final storyBloc = BlocProvider.of<StoryBloc>(context);
     storyBloc.add(OpenStory(stories, storyIndex));
+  }
+
+  void _playStoryContentEvent() {
+    var storyState = storyBloc.state;
+    storyContentBloc.add(PlayStoryContent(
+        stories[storyState.storyIndex], storyState.story.storyPlayIndex));
   }
 
   @override
   void initState() {
     super.initState();
-
-    ///Getting the stories
-    getStories();
+    storyBloc = BlocProvider.of<StoryBloc>(context);
+    storyContentBloc = BlocProvider.of<StoryContentBloc>(context);
   }
 
   @override
@@ -141,64 +132,75 @@ class _HomePageState extends State<HomePage> {
         slivers: <Widget>[
           //Stories
           SliverToBoxAdapter(
-            child: BlocConsumer<StoriesBloc, StoriesState>(
+            child: BlocListener<StoryBloc, StoryState>(
               listener: (context, state) {
-                if (state is StoriesError) {
-                  final internetCubit = BlocProvider.of<InternetCubit>(context);
-                  String snackbarText =
-                      internetCubit.state is InternetDisconnected
-                          ? AppLocalizations.of(context)!.internetError
-                          : state.message!;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(snackbarText),
-                    ),
-                  );
+                if (state is StoryOpened) {
+                  _playStoryContentEvent();
                 }
               },
-              builder: (context, state) {
-                if (state is StoriesLoading) {
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      CircularProgressIndicator(),
-                    ],
-                  );
-                } else if (state is StoriesError) {
-                  if (BlocProvider.of<InternetCubit>(context).state
-                      is InternetDisconnected) {
-                    return Text(AppLocalizations.of(context)!.internetError);
-                  } else {
-                    return Text(state.message!);
+              child: BlocConsumer<StoriesBloc, StoriesState>(
+                listener: (context, state) {
+                  if (state is StoriesError) {
+                    final internetCubit =
+                        BlocProvider.of<InternetCubit>(context);
+                    String snackbarText =
+                        internetCubit.state is InternetDisconnected
+                            ? AppLocalizations.of(context)!.internetError
+                            : state.message!;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(snackbarText),
+                      ),
+                    );
                   }
-                } else if (state is StoriesLoaded) {
-                  stories = state.stories!;
-                  return SizedBox(
-                    height: 70,
-                    child: ListView.builder(
-                      controller: _storyController,
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: stories.length,
-                      itemBuilder: (context, index) {
-                        return StoryAvatar(
-                          story: stories[index],
-                          onStoryTap: () async {
-                            int storyIndex = await NavigatorService()
-                                .navigateTo(Pages.storyPage, data: {
-                              'stories': stories,
-                              'storyIndex': index
-                            });
-                            arrangeSeenStories();
-                            _storyController.jumpTo(getScrollIndex(storyIndex));
-                          },
-                        );
-                      },
-                    ),
-                  );
-                }
-                return Text(AppLocalizations.of(context)!.somethingWentWrong);
-              },
+                },
+                builder: (context, state) {
+                  if (state is StoriesLoading) {
+                    _getStories();
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        CircularProgressIndicator(),
+                      ],
+                    );
+                  } else if (state is StoriesError) {
+                    if (BlocProvider.of<InternetCubit>(context).state
+                        is InternetDisconnected) {
+                      return Text(AppLocalizations.of(context)!.internetError);
+                    } else {
+                      return Text(state.message!);
+                    }
+                  } else if (state is StoriesLoaded) {
+                    stories = state.stories.stories;
+                    // stories = state.stories!;
+                    return SizedBox(
+                      height: 70,
+                      child: ListView.builder(
+                        controller: _storyController,
+                        scrollDirection: Axis.horizontal,
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: stories.length,
+                        itemBuilder: (context, index) {
+                          return StoryAvatar(
+                            story: stories[index],
+                            onStoryTap: () async {
+                              openStory(index);
+                              int storyIndex = await NavigatorService()
+                                  .navigateTo(Pages.storyPage, data: {
+                                'stories': stories,
+                                'storyIndex': index
+                              });
+                              _storyController
+                                  .jumpTo(getScrollIndex(storyIndex));
+                            },
+                          );
+                        },
+                      ),
+                    );
+                  }
+                  return Text(AppLocalizations.of(context)!.somethingWentWrong);
+                },
+              ),
             ),
           ),
 

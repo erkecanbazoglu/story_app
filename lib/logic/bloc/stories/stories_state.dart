@@ -21,11 +21,11 @@ class StoriesLoading extends StoriesState {
 }
 
 class StoriesLoaded extends StoriesState {
-  final List<Story>? stories;
+  final Stories stories;
   const StoriesLoaded(this.stories);
 
   @override
-  List<Object> get props => [stories!];
+  List<Object> get props => [stories];
 }
 
 class StoriesError extends StoriesState {

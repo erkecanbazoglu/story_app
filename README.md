@@ -7,6 +7,7 @@ Story application developed with Flutter
 - [Overview](#overview)
   - [Screenshot](#screenshot)
   - [Built with](#built-with)
+- [UPDATES](#updates)
 - [Introduction](#introduction)
   - [Screens (UI)](#ui-screens)
   - [Widgets (UI)](#ui-widgets)
@@ -34,6 +35,17 @@ Concepts:
 - UI: Slivers, Videos Players, Cached Images and Videos
 - Logic: Bloc Design Patter
 - Data: APIs (Photo and Video), Models, Repositories
+
+## UPDATES
+
+Below you can track the changes:
+
+- Story and Story Content Bloc implemented in Story Page
+- Logic and UI separated, functions mostly moved to logic
+- JSON serialization implemented to create toJSON & fromJSON methods
+- Hydrated Storage implemented instead of Shared Preferences
+- Animations are paused during the story slides and started when the slide is over
+- Bug Fixes: Animation, Story Playing, Animated Progress Bars and etc.
 
 ## Introduction
 

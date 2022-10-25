@@ -11,12 +11,14 @@ part 'story_content_state.dart';
 
 class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
   final StoryContentRepo? storyContentRepo;
-  StoryContentBloc(this.storyContentRepo) : super(const StoryClosedInitial()) {
+  StoryContentBloc(this.storyContentRepo) : super(const StoryContentInitial()) {
     on<PlayStoryContent>(_onPlayStoryContent);
     on<PauseStoryContent>(_onPauseStoryContent);
     on<ResumeStoryContent>(_onResumeStoryContent);
     on<NextStoryContent>(_onNextStoryContent);
     on<PreviousStoryContent>(_onPreviousStoryContent);
+    on<FinishStoryContent>(_onFinishStoryContent);
+    on<ResetStoryContent>(_onResetStoryContent);
   }
 
   ///Play Story Content Event
@@ -25,7 +27,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       PlayStoryContent event, Emitter<StoryContentState> emit) async {
     emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
         event.storyContentIndex, PlayState.begin));
-    print("Play event: " + state.toString());
+    print("Play Story Content event: " + state.toString());
   }
 
   ///Pause Story Content Event
@@ -34,7 +36,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       PauseStoryContent event, Emitter<StoryContentState> emit) async {
     emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
         event.storyContentIndex, PlayState.paused));
-    print("Pause event: " + state.toString());
+    print("Pause Story Content event: " + state.toString());
   }
 
   ///Resume Story Content Event
@@ -43,24 +45,53 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       ResumeStoryContent event, Emitter<StoryContentState> emit) async {
     emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
         event.storyContentIndex, PlayState.resume));
-    print("Resume event: " + state.toString());
+    print("Resume Story Content event: " + state.toString());
   }
 
   ///Next Story Content Event
 
   Future<void> _onNextStoryContent(
       NextStoryContent event, Emitter<StoryContentState> emit) async {
-    emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
-        event.storyContentIndex, PlayState.begin));
-    print("Next event: " + state.toString());
+    if (event.storyContentIndex < event.story.userStories.length - 1) {
+      int storyContentIndex = event.storyContentIndex + 1;
+      emit(StoryContentPlayed(event.story.userStories[storyContentIndex],
+          storyContentIndex, PlayState.begin));
+    } else {
+      emit(StoryContentFinished(event.storyContentIndex, PlayState.next));
+      // emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
+      //     event.storyContentIndex, PlayState.next));
+    }
+    print("Next Story Content event: " + state.toString());
   }
 
   ///Previous Story Content Event
 
   Future<void> _onPreviousStoryContent(
       PreviousStoryContent event, Emitter<StoryContentState> emit) async {
-    emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
-        event.storyContentIndex, PlayState.begin));
-    print("Previous event: " + state.toString());
+    if (event.storyContentIndex > 0) {
+      int storyContentIndex = event.storyContentIndex - 1;
+      emit(StoryContentPlayed(event.story.userStories[storyContentIndex],
+          storyContentIndex, PlayState.begin));
+    } else {
+      emit(StoryContentFinished(event.storyContentIndex, PlayState.prev));
+      // emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
+      //     event.storyContentIndex, PlayState.prev));
+    }
+    print("Previous Story Content event: " + state.toString());
+  }
+
+  ///Finish Story Content Event
+
+  Future<void> _onFinishStoryContent(
+      FinishStoryContent event, Emitter<StoryContentState> emit) async {
+    emit(StoryContentFinished(event.storyContentIndex, PlayState.none));
+    print("Finish Story Content event: " + state.toString());
+  }
+
+  ///Looks like there is no more need for reset
+  Future<void> _onResetStoryContent(
+      ResetStoryContent event, Emitter<StoryContentState> emit) async {
+    emit(const StoryContentInitial());
+    print("Reset Story Content event: " + state.toString());
   }
 }
