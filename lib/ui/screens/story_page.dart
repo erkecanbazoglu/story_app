@@ -279,14 +279,14 @@ class _StoryPageState extends State<StoryPage>
               if (state.openState == OpenState.playCurrent) {
                 _playStoryContentEvent();
               } else if (state.openState == OpenState.playNext) {
-                await _carouselController.nextPage();
+                // await _carouselController.nextPage();
                 setState(() {
-                  _carouselController;
+                  _carouselController.nextPage();
                 });
               } else if (state.openState == OpenState.playPrev) {
-                await _carouselController.previousPage();
+                // await _carouselController.previousPage();
                 setState(() {
-                  _carouselController;
+                  _carouselController.previousPage();
                 });
               } else if (state.openState == OpenState.closed) {
                 Navigator.pop(context, state.storyIndex);
