@@ -17,10 +17,6 @@ import 'dart:async';
 import '../../data/models/story.dart';
 import '../widgets/animated_bar.dart';
 
-// export 'package:video_player_platform_interface/video_player_platform_interface.dart'
-//     show DurationRange, DataSourceType, VideoFormat, VideoPlayerOptions;
-// export 'src/closed_caption_file.dart';
-
 class StoryPage extends StatefulWidget {
   final List<Story> stories;
   final int storyIndex;
@@ -162,7 +158,6 @@ class _StoryPageState extends State<StoryPage>
   ///StoryBloc Events
 
   void _openStoryEvent(int storyIndex) {
-    print(storyIndex);
     storyBloc.add(OpenStory(widget.stories, storyIndex));
   }
 
@@ -187,6 +182,7 @@ class _StoryPageState extends State<StoryPage>
     var storyState = storyBloc.state;
 
     int firstStoryContent = storyState.story.storyPlayIndex;
+    print("INDEX: " + firstStoryContent.toString());
     storyContentBloc.add(PlayStoryContent(storyState.story, firstStoryContent));
   }
 
@@ -218,9 +214,7 @@ class _StoryPageState extends State<StoryPage>
   void _previousStoryContentEvent() async {
     _animationController.stop();
     _animationController.reset();
-    print("hey1");
     await _videoController.pause();
-    print("hey2");
 
     var storyContentState = storyContentBloc.state;
     var storyState = storyBloc.state;
@@ -262,10 +256,8 @@ class _StoryPageState extends State<StoryPage>
         state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached) {
       _pauseStoryContentEvent();
-      // _pauseStory(story.userStories[_currentIndex]);
     } else if (state == AppLifecycleState.resumed) {
       _resumeStoryContentEvent();
-      // _resumeStory(story.userStories[_currentIndex]);
     }
   }
 
@@ -279,12 +271,10 @@ class _StoryPageState extends State<StoryPage>
               if (state.openState == OpenState.playCurrent) {
                 _playStoryContentEvent();
               } else if (state.openState == OpenState.playNext) {
-                // await _carouselController.nextPage();
                 setState(() {
                   _carouselController.nextPage();
                 });
               } else if (state.openState == OpenState.playPrev) {
-                // await _carouselController.previousPage();
                 setState(() {
                   _carouselController.previousPage();
                 });
@@ -298,7 +288,6 @@ class _StoryPageState extends State<StoryPage>
           listener: (context, state) {
             if (state is StoryContentPlayed) {
               if (state.playState == PlayState.begin) {
-                ///Change should animate on first and laters
                 if (!isCarouselChanged) {
                   _pageController.animateToPage(state.storyContentIndex,
                       duration: const Duration(milliseconds: 1),
@@ -354,13 +343,12 @@ class _StoryPageState extends State<StoryPage>
                         onSlideStart: () => _pauseStoryContentEvent(),
                         onSlideEnd: (newStoryIndex) {
                           var storyState = storyBloc.state;
-                          var storyContentState = storyContentBloc.state;
 
+                          ///Carousel Page Changed
                           if (storyState.storyIndex != newStoryIndex) {
                             isCarouselChanged = true;
                             _openStoryEvent(newStoryIndex);
-                          }
-                          if (!isCarouselChanged) {
+                          } else {
                             _resumeStoryContentEvent();
                           }
                         },

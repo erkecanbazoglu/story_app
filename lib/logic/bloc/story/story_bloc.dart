@@ -43,7 +43,7 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
 
   Future<void> _onNextStory(NextStory event, Emitter<StoryState> emit) async {
     if (event.storyIndex < event.stories.length - 1) {
-      int storyIndex = event.storyIndex + 1;
+      int storyIndex = event.storyIndex;
       emit(StoryOpened(
           event.stories[storyIndex], storyIndex, OpenState.playNext));
     } else {
@@ -59,7 +59,7 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
   Future<void> _onPreviousStory(
       PreviousStory event, Emitter<StoryState> emit) async {
     if (event.storyIndex > 0) {
-      int storyIndex = event.storyIndex - 1;
+      int storyIndex = event.storyIndex;
       emit(StoryOpened(
           event.stories[storyIndex], storyIndex, OpenState.playPrev));
     } else {

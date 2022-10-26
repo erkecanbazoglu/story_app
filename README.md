@@ -42,10 +42,11 @@ Below you can track the changes:
 
 - Story and Story Content Bloc implemented in Story Page
 - Logic and UI separated, functions mostly moved to logic
+- Cache Manager Service initialized and caching moved to here
 - JSON serialization implemented to create toJSON & fromJSON methods
 - Hydrated Storage implemented instead of Shared Preferences
 - Animations are paused during the story slides and started when the slide is over
-- Changes in Flutter Carousel Slider Package. You can see [Pull Requests](https://github.com/UdaraWanasinghe/FlutterCarouselSlider/pulls?q=is%3Apr+is%3Aclosed).
+- Changes made in Flutter Carousel Slider Package. You can see [Pull Requests](https://github.com/UdaraWanasinghe/FlutterCarouselSlider/pulls?q=is%3Apr+is%3Aclosed).
 - Bug Fixes: Animation, Story Playing, Animated Progress Bars and etc.
 
 ## Introduction
