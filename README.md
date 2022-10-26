@@ -73,20 +73,20 @@ Features include:
 
 There are 3 main and 5 test screens:
 
-Story Page: Main Story Page that shows stories
-Home Page: Home page with photo posts and stories at the top
-Welcome Page: Page that includes the bottom navbar
+Story Page: Main Story Page that shows stories  
+Home Page: Home page with photo posts and stories at the top  
+Welcome Page: Page that includes the bottom navbar  
 Test Pages: There are 5 test pages in the others folder
 
 ### Widgets (UI)
 
 Below you can see the list of widgets in the UI component seperated from the screens.
 
-Photo Post: Photo posts which is on the Home Page
-Story Avatar: Story Avatars at the top of the Home Page
-Video Player: Full screen video player widget
-Animated Bar: Animated progress bar for the stories
-Progress Bar: Progress bar with progress bars - Deprecated
+Photo Post: Photo posts which is on the Home Page  
+Story Avatar: Story Avatars at the top of the Home Page  
+Video Player: Full screen video player widget  
+Animated Bar: Animated progress bar for the stories  
+Progress Bar: Progress bar with progress bars - Deprecated  
 Progress Bars: Individual progress bars - Deprecated
 
 ### Logic
@@ -95,10 +95,10 @@ BLoc design pattern and state managemenet library used for logic.
 
 Blocs and cubits are two folders but there are 5 blocs in total:
 
-Stories Bloc: Stories are fetched and updated
-Story Bloc: Story logic with open/close/next/prev events
-Story Content Bloc: Story Content logic with extra pause and resume options
-Internet Cubit: Internet is fetched through internet cubit
+Stories Bloc: Stories are fetched and updated  
+Story Bloc: Story logic with open/close/next/prev events  
+Story Content Bloc: Story Content logic with extra pause and resume options  
+Internet Cubit: Internet is fetched through internet cubit  
 User Bloc: Initialized but Deprecated, could be further improvement
 
 ### Data
@@ -107,7 +107,7 @@ Data is composed of 3 parts: Models, Providers and Repositories
 
 Models:
 
-User: User model implemented here
+User: User model implemented here  
 Story: Story and Story Content model is implemented here
 
 Providers:
@@ -120,26 +120,26 @@ Photos: Photo provider consist of different implementations
 
 First is not used due to image quality, only second and third is used to mix them and not to overload Pexels API and push API limits
 
-Videos: Videos are fetched through Pexels API
+Videos: Videos are fetched through Pexels API  
 Note: Only a few videos are fetched through the API
 
 Both photo and video API requests can be modified, there is quotas written on each one
 
 Repos:
 
-User: Users are fetched here, through samples users
-Story Content: Story Contents are generated through providers and models
-Story: Story generation for each of the user with random order
+User: Users are fetched here, through samples users  
+Story Content: Story Contents are generated through providers and models  
+Story: Story generation for each of the user with random order  
 Stories: Stories are gathered in one place with random order
 
 ### Other
 
-Assets: Sample images and videos are included in the assets folder
-Constants: Some constant image/video data and other constants are here
-l10n: Localization folders are here with English and Turkish languages
+Assets: Sample images and videos are included in the assets folder  
+Constants: Some constant image/video data and other constants are here  
+l10n: Localization folders are here with English and Turkish languages  
 Services: Some other services are implemented here
 
-Navigator Service: Page navigations are managed here
+Navigator Service: Page navigations are managed here  
 Shared Preferences Service: Local data such as Seen/Unseen Stories are managed here
 
 ### Packages
