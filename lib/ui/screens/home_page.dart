@@ -59,10 +59,9 @@ class _HomePageState extends State<HomePage> {
     storyBloc.add(OpenStory(stories, storyIndex));
   }
 
-  void _playStoryContentEvent() {
-    var storyState = storyBloc.state;
-    storyContentBloc.add(PlayStoryContent(
-        stories[storyState.storyIndex], storyState.story.storyPlayIndex));
+  ///Resets the Story Content state
+  void _resetStoryContentEvent() {
+    storyContentBloc.add(const ResetStoryContent());
   }
 
   @override
@@ -135,7 +134,7 @@ class _HomePageState extends State<HomePage> {
             child: BlocListener<StoryBloc, StoryState>(
               listener: (context, state) {
                 if (state is StoryOpened) {
-                  _playStoryContentEvent();
+                  // _resetStoryContentEvent();
                 }
               },
               child: BlocConsumer<StoriesBloc, StoriesState>(
@@ -190,6 +189,7 @@ class _HomePageState extends State<HomePage> {
                                 'stories': stories,
                                 'storyIndex': index
                               });
+                              _resetStoryContentEvent();
                               _storyController
                                   .jumpTo(getScrollIndex(storyIndex));
                             },

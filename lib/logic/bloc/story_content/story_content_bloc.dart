@@ -12,6 +12,7 @@ part 'story_content_state.dart';
 class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
   final StoryContentRepo? storyContentRepo;
   StoryContentBloc(this.storyContentRepo) : super(const StoryContentInitial()) {
+    on<LoadStoryContent>(_onLoadStoryContent);
     on<PlayStoryContent>(_onPlayStoryContent);
     on<PauseStoryContent>(_onPauseStoryContent);
     on<ResumeStoryContent>(_onResumeStoryContent);
@@ -19,6 +20,15 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
     on<PreviousStoryContent>(_onPreviousStoryContent);
     on<FinishStoryContent>(_onFinishStoryContent);
     on<ResetStoryContent>(_onResetStoryContent);
+  }
+
+  ///Load Story Content Event
+
+  Future<void> _onLoadStoryContent(
+      LoadStoryContent event, Emitter<StoryContentState> emit) async {
+    emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
+        event.storyContentIndex, PlayState.loading));
+    print("Load Story Content event: " + state.toString());
   }
 
   ///Play Story Content Event
@@ -55,7 +65,9 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
     if (event.storyContentIndex < event.story.userStories.length - 1) {
       int storyContentIndex = event.storyContentIndex + 1;
       emit(StoryContentPlayed(event.story.userStories[storyContentIndex],
-          storyContentIndex, PlayState.begin));
+          storyContentIndex, PlayState.loading));
+      // emit(StoryContentPlayed(event.story.userStories[storyContentIndex],
+      //     storyContentIndex, PlayState.begin));
     } else {
       emit(StoryContentFinished(event.storyContentIndex, PlayState.next));
       // emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
@@ -71,7 +83,9 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
     if (event.storyContentIndex > 0) {
       int storyContentIndex = event.storyContentIndex - 1;
       emit(StoryContentPlayed(event.story.userStories[storyContentIndex],
-          storyContentIndex, PlayState.begin));
+          storyContentIndex, PlayState.loading));
+      // emit(StoryContentPlayed(event.story.userStories[storyContentIndex],
+      //     storyContentIndex, PlayState.begin));
     } else {
       emit(StoryContentFinished(event.storyContentIndex, PlayState.prev));
       // emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
@@ -88,7 +102,8 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
     print("Finish Story Content event: " + state.toString());
   }
 
-  ///Looks like there is no more need for reset
+  ///Reset Story Content Event
+
   Future<void> _onResetStoryContent(
       ResetStoryContent event, Emitter<StoryContentState> emit) async {
     emit(const StoryContentInitial());

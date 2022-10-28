@@ -4,6 +4,7 @@ enum PlayState {
   begin,
   paused,
   resume,
+  loading,
   next,
   prev,
   none,
@@ -27,6 +28,15 @@ class StoryContentInitial extends StoryContentState {
 
   @override
   List<Object> get props => [];
+}
+
+class StoryContentLoading extends StoryContentState {
+  final StoryContent storyContent;
+  final int storyContentIndex;
+  const StoryContentLoading(this.storyContent, this.storyContentIndex);
+
+  @override
+  List<Object> get props => [storyContent, storyContentIndex];
 }
 
 class StoryContentPlayed extends StoryContentState {

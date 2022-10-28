@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test_app/logic/bloc/stories/stories_bloc.dart';
 import 'package:flutter_carousel_slider/carousel_slider.dart';
+import 'package:test_app/ui/widgets/story_user_layer.dart';
 // import './carousel/carousel_slider.dart';
 import '../../services/cache_manager.dart';
 import 'package:test_app/logic/bloc/story/story_bloc.dart';
 import '../../logic/bloc/story_content/story_content_bloc.dart';
 import '../../services/shared_preferences.dart';
+import '../widgets/story_progress_indicator.dart';
 import '../widgets/video_player_widget.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -47,14 +49,14 @@ class _StoryPageState extends State<StoryPage>
   late final storiesBloc;
 
   ///Others variables
-  bool isCarouselChanged = false;
+  late dynamic imageFile;
+  bool isPageChanging = false;
   double? screenWidth;
   double? dx;
 
-  ///Initializing the video controller (If not problem occurs on dispose)
+  ///Initializing the controllers
   void _initControllers() {
-    _pageController =
-        PageController(initialPage: storyBloc.state.story.storyPlayIndex);
+    _pageController = PageController(initialPage: 0);
     _animationController = AnimationController(vsync: this);
 
     String initialVideoUrl =
@@ -83,6 +85,8 @@ class _StoryPageState extends State<StoryPage>
     _animationController.stop();
     _animationController.reset();
 
+    var storyContentState = storyContentBloc.state;
+
     //Story Seen with Shared Preferences (Deprecated)
     // SharedPreferencesService.setStoryContentSeen(storyContent!.id);
     // storyContent.contentSeen = true;
@@ -99,40 +103,55 @@ class _StoryPageState extends State<StoryPage>
         _animationController.forward();
         break;
       case MediaType.video:
+        setState(() {
+          if (_videoController.value.isInitialized) {
+            //Set the video duration and start the animation
+            _animationController.duration = _videoController.value.duration;
+            _videoController.play();
+            _animationController.forward();
+          }
+        });
+        break;
+      default:
+        _loadStoryContent();
+        break;
+    }
+  }
+
+  void _loadStoryContent() async {
+    var storyContentState = storyContentBloc.state;
+    final storyContent = storyContentState.storyContent;
+
+    ///Below caching checked and implemented in loading state
+
+    switch (storyContent.media) {
+      case MediaType.image:
+        final fileInfo =
+            await CacheManagerService.checkCacheFor(storyContent.url);
+        if (fileInfo == null) {
+          await CacheManagerService.cachedForUrl(storyContent.url);
+        } else {
+          imageFile = fileInfo.file;
+        }
+        break;
+      case MediaType.video:
         final fileInfo =
             await CacheManagerService.checkCacheFor(storyContent.url);
         if (fileInfo == null) {
           _videoController = VideoPlayerController.network(storyContent.url);
-          _videoController.initialize().then((value) {
-            CacheManagerService.cachedForUrl(storyContent.url);
-            setState(() {
-              if (_videoController.value.isInitialized) {
-                //Set the video duration and start the animation
-                _animationController.duration = _videoController.value.duration;
-                _videoController.play();
-                _animationController.forward();
-              }
-            });
-          });
+          await CacheManagerService.cachedForUrl(storyContent.url);
+          await _videoController.initialize();
         } else {
           final file = fileInfo.file;
           _videoController = VideoPlayerController.file(file);
-          _videoController.initialize().then((value) {
-            setState(() {
-              if (_videoController.value.isInitialized) {
-                //Set the video duration and start the animation
-                _animationController.duration = _videoController.value.duration;
-                _videoController.play();
-                _animationController.forward();
-              }
-            });
-          });
+          await _videoController.initialize();
         }
         break;
       default:
-        _animationController.forward();
         break;
     }
+    await Future.delayed(const Duration(milliseconds: 1000), () {});
+    _playStoryContentEvent();
   }
 
   void _pauseStoryContent(storyContent) {
@@ -178,11 +197,21 @@ class _StoryPageState extends State<StoryPage>
 
   ///StoryContentBloc Events
 
+  void _loadStoryContentEvent() {
+    var storyState = storyBloc.state;
+    var storyContentState = storyContentBloc.state;
+
+    ///Only called on new Story
+    int firstStoryContent = 0;
+    storyContentBloc.add(LoadStoryContent(storyState.story, firstStoryContent));
+  }
+
   void _playStoryContentEvent() {
     var storyState = storyBloc.state;
 
-    int firstStoryContent = storyState.story.storyPlayIndex;
-    print("INDEX: " + firstStoryContent.toString());
+    // int firstStoryContent = storyState.story.storyPlayIndex;
+    var storyContentState = storyContentBloc.state;
+    int firstStoryContent = storyContentState.storyContentIndex;
     storyContentBloc.add(PlayStoryContent(storyState.story, firstStoryContent));
   }
 
@@ -238,7 +267,12 @@ class _StoryPageState extends State<StoryPage>
     final StoryContent initialStory = widget.stories[widget.storyIndex]
         .userStories[storyBloc.state.story.storyPlayIndex];
     // _openStoryEvent(widget.storyIndex);
-    _playStory(initialStory);
+    var storyState = storyBloc.state;
+    storyContentBloc.add(LoadStoryContent(
+        widget.stories[widget.storyIndex], storyState.story.storyPlayIndex));
+    //  storyContentBloc.add(PlayStoryContent(
+    //     widget.stories[widget.storyIndex], storyState.story.storyPlayIndex));
+    // _playStory(initialStory);
 
     ///Animation Controller listener (for auto page slides)
     _animationController.addStatusListener((status) {
@@ -269,7 +303,8 @@ class _StoryPageState extends State<StoryPage>
           listener: (context, state) async {
             if (state is StoryOpened) {
               if (state.openState == OpenState.playCurrent) {
-                _playStoryContentEvent();
+                _loadStoryContentEvent();
+                // _playStoryContentEvent();
               } else if (state.openState == OpenState.playNext) {
                 setState(() {
                   _carouselController.nextPage();
@@ -288,17 +323,17 @@ class _StoryPageState extends State<StoryPage>
           listener: (context, state) {
             if (state is StoryContentPlayed) {
               if (state.playState == PlayState.begin) {
-                if (!isCarouselChanged) {
-                  _pageController.animateToPage(state.storyContentIndex,
-                      duration: const Duration(milliseconds: 1),
-                      curve: Curves.easeInOut);
-                }
-                isCarouselChanged = false;
+                // _pageController.animateToPage(state.storyContentIndex,
+                //     duration: const Duration(milliseconds: 1),
+                //     curve: Curves.easeInOut);
+                _pageController.jumpToPage(state.storyContentIndex);
                 _playStory(state.storyContent);
               } else if (state.playState == PlayState.resume) {
                 _resumeStoryContent(state.storyContent);
               } else if (state.playState == PlayState.paused) {
                 _pauseStoryContent(state.storyContent);
+              } else if (state.playState == PlayState.loading) {
+                _loadStoryContent();
               }
 
               ///StoryContent Finished state
@@ -315,356 +350,390 @@ class _StoryPageState extends State<StoryPage>
       child: BlocBuilder<StoryBloc, StoryState>(
         builder: (context, storyState) {
           if (storyState is StoryOpened) {
-            return BlocBuilder<StoryContentBloc, StoryContentState>(
-              builder: (context, storyContentState) {
-                if (storyContentState is StoryContentPlayed) {
-                  return DismissiblePage(
-                    onDismissed: () {
-                      _closeStoryEvent();
+            return
+                // WillPopScope(
+                //   onWillPop: () async => false,
+                AbsorbPointer(
+              absorbing: isPageChanging,
+              child: DismissiblePage(
+                onDismissed: () {
+                  _closeStoryEvent();
+                },
+                onDragStart: () => _pauseStoryContentEvent(),
+                onDragEnd: () => _resumeStoryContentEvent(),
+                backgroundColor: Colors.white,
+                direction: DismissiblePageDismissDirection.down,
+                isFullScreen: true,
+                child: Scaffold(
+                  backgroundColor: Colors.blueGrey[100],
+                  body: CarouselSlider.builder(
+                    key: _carouselKey,
+                    controller: _carouselController,
+                    initialPage: widget.storyIndex,
+                    itemCount: widget.stories.length,
+                    unlimitedMode: false,
+                    slideTransform: const CubeTransform(),
+                    autoSliderTransitionCurve: Curves.easeInOut,
+                    autoSliderTransitionTime: const Duration(milliseconds: 300),
+                    // onSlideChanged: (index) => _moveToNewStory(index),
+                    onSlideStart: () {
+                      isPageChanging = true;
+                      _pauseStoryContentEvent();
                     },
-                    onDragStart: () => _pauseStoryContentEvent(),
-                    onDragEnd: () => _resumeStoryContentEvent(),
-                    backgroundColor: Colors.white,
-                    direction: DismissiblePageDismissDirection.down,
-                    isFullScreen: true,
-                    child: Scaffold(
-                      backgroundColor: Colors.blueGrey[100],
-                      body: CarouselSlider.builder(
-                        key: _carouselKey,
-                        controller: _carouselController,
-                        initialPage: widget.storyIndex,
-                        itemCount: widget.stories.length,
-                        unlimitedMode: false,
-                        slideTransform: const CubeTransform(),
-                        autoSliderTransitionCurve: Curves.easeInOut,
-                        autoSliderTransitionTime:
-                            const Duration(milliseconds: 300),
-                        // onSlideChanged: (index) => _moveToNewStory(index),
-                        onSlideStart: () => _pauseStoryContentEvent(),
-                        onSlideEnd: (newStoryIndex) {
-                          var storyState = storyBloc.state;
+                    onSlideEnd: (newStoryIndex) {
+                      var storyState = storyBloc.state;
 
-                          ///Carousel Page Changed
-                          if (storyState.storyIndex != newStoryIndex) {
-                            isCarouselChanged = true;
-                            _openStoryEvent(newStoryIndex);
-                          } else {
-                            _resumeStoryContentEvent();
+                      ///Carousel Page Changed
+                      if (storyState.storyIndex != newStoryIndex) {
+                        _openStoryEvent(newStoryIndex);
+                      } else {
+                        _resumeStoryContentEvent();
+                      }
+                      isPageChanging = false;
+                    },
+                    slideBuilder: (carouselIndex) {
+                      return BlocBuilder<StoryContentBloc, StoryContentState>(
+                        builder: (context, storyContentState) {
+                          if (storyContentState is StoryContentPlayed) {
+                            return Stack(
+                              children: [
+                                GestureDetector(
+                                  //get the very first tap event
+                                  onTapDown: (details) {
+                                    screenWidth =
+                                        MediaQuery.of(context).size.width;
+                                    dx = details.globalPosition.dx;
+                                    _pauseStoryContentEvent();
+                                  },
+                                  //validate tap event
+                                  onTap: () {
+                                    if (dx! < screenWidth! / 3) {
+                                      _previousStoryContentEvent();
+                                    } else {
+                                      _nextStoryContentEvent();
+                                    }
+                                  },
+                                  //resume the story
+                                  onLongPressEnd: (_) =>
+                                      _resumeStoryContentEvent(),
+                                  child: Hero(
+                                      tag: widget.stories[carouselIndex].id,
+                                      child: PageView.builder(
+                                        controller: _pageController,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        itemCount: widget.stories[carouselIndex]
+                                            .userStories.length,
+                                        itemBuilder: (context, storyIndex) {
+                                          // final storyContent = storyState
+                                          //     .story.userStories[storyIndex];
+                                          final storyContent = widget
+                                              .stories[carouselIndex]
+                                              .userStories[storyIndex];
+                                          switch (storyContent.media) {
+                                            case MediaType.image:
+                                              return CachedNetworkImage(
+                                                imageUrl: storyContent.url,
+                                                fit: BoxFit.cover,
+                                              );
+                                            // return Image(
+                                            //   image: FileImage(imageFile),
+                                            //   fit: BoxFit.cover,
+                                            // );
+                                            case MediaType.video:
+                                              if (_videoController
+                                                  .value.isInitialized) {
+                                                return VideoPlayerWidget(
+                                                    controller:
+                                                        _videoController);
+                                              }
+                                              break;
+                                          }
+                                          return const StoryProgressIndicator();
+                                        },
+                                      )),
+                                ),
+                                // SafeArea(
+                                //   child: Column(
+                                //     children: [
+                                //       Padding(
+                                //         padding: const EdgeInsets.symmetric(
+                                //             horizontal: 12, vertical: 2),
+                                //         child: Row(
+                                //           children: widget
+                                //               .stories[carouselIndex].userStories
+                                //               .asMap()
+                                //               .map((index, storyItem) {
+                                //                 return MapEntry(
+                                //                   index,
+                                //                   AnimatedBar(
+                                //                     animationController:
+                                //                         storyState.storyIndex ==
+                                //                                 carouselIndex
+                                //                             ? _animationController
+                                //                             : AnimationController(
+                                //                                 vsync: this),
+                                //                     position: index,
+                                //                     currentIndex:
+                                //                         storyState.storyIndex ==
+                                //                                 carouselIndex
+                                //                             ? storyContentState
+                                //                                 .storyContentIndex
+                                //                             : 0,
+                                //                   ),
+                                //                 );
+                                //               })
+                                //               .values
+                                //               .toList(),
+                                //         ),
+                                //       ),
+                                //       Expanded(
+                                //         child: Padding(
+                                //           padding: const EdgeInsets.symmetric(
+                                //               horizontal: 20, vertical: 8),
+                                //           child: Column(
+                                //             mainAxisAlignment:
+                                //                 MainAxisAlignment.spaceBetween,
+                                //             crossAxisAlignment:
+                                //                 CrossAxisAlignment.start,
+                                //             children: [
+                                //               Row(
+                                //                 mainAxisAlignment:
+                                //                     MainAxisAlignment.start,
+                                //                 crossAxisAlignment:
+                                //                     CrossAxisAlignment.center,
+                                //                 children: [
+                                //                   CachedNetworkImage(
+                                //                     imageUrl: widget
+                                //                         .stories[carouselIndex]
+                                //                         .user
+                                //                         .profileImage,
+                                //                     imageBuilder: (context,
+                                //                             imageProvider) =>
+                                //                         Container(
+                                //                       height: 32,
+                                //                       width: 32,
+                                //                       decoration: BoxDecoration(
+                                //                         shape: BoxShape.circle,
+                                //                         image: DecorationImage(
+                                //                           image: imageProvider,
+                                //                           fit: BoxFit.cover,
+                                //                         ),
+                                //                       ),
+                                //                     ),
+                                //                   ),
+                                //                   Padding(
+                                //                     padding:
+                                //                         const EdgeInsets.only(
+                                //                             left: 12),
+                                //                     child: Column(
+                                //                       crossAxisAlignment:
+                                //                           CrossAxisAlignment
+                                //                               .start,
+                                //                       children: [
+                                //                         RichText(
+                                //                           text: TextSpan(
+                                //                             style:
+                                //                                 const TextStyle(
+                                //                                     color: Colors
+                                //                                         .black),
+                                //                             children: [
+                                //                               TextSpan(
+                                //                                 text: widget
+                                //                                     .stories[
+                                //                                         carouselIndex]
+                                //                                     .user
+                                //                                     .name,
+                                //                                 style:
+                                //                                     const TextStyle(
+                                //                                   color: Colors
+                                //                                       .white,
+                                //                                   fontSize: 13,
+                                //                                   fontWeight:
+                                //                                       FontWeight
+                                //                                           .bold,
+                                //                                 ),
+                                //                               ),
+                                //                               TextSpan(
+                                //                                 text: storyState
+                                //                                             .storyIndex ==
+                                //                                         carouselIndex
+                                //                                     ? '  ${storyState.story.userStories[storyContentState.storyContentIndex].sentTimestamp.toString()}h'
+                                //                                     : '  ${widget.stories[carouselIndex].userStories[0].sentTimestamp.toString()}h',
+                                //                                 style:
+                                //                                     const TextStyle(
+                                //                                   color: Colors
+                                //                                       .white60,
+                                //                                   fontSize: 13,
+                                //                                   fontWeight:
+                                //                                       FontWeight
+                                //                                           .bold,
+                                //                                 ),
+                                //                               ),
+                                //                             ],
+                                //                           ),
+                                //                         ),
+                                //                       ],
+                                //                     ),
+                                //                   ),
+                                //                   Expanded(
+                                //                     child: Align(
+                                //                       alignment:
+                                //                           Alignment.bottomRight,
+                                //                       child: Row(
+                                //                         mainAxisSize:
+                                //                             MainAxisSize.min,
+                                //                         children: [
+                                //                           InkWell(
+                                //                             child: const Icon(Icons
+                                //                                 .more_horiz_outlined),
+                                //                             onTap: () {
+                                //                               //Settings
+                                //                             },
+                                //                           ),
+                                //                           IconButton(
+                                //                             icon: const Icon(
+                                //                               Icons.close,
+                                //                             ),
+                                //                             onPressed: () {
+                                //                               _closeStoryEvent();
+                                //                             },
+                                //                           ),
+                                //                         ],
+                                //                       ),
+                                //                     ),
+                                //                   ),
+                                //                 ],
+                                //               ),
+                                //               Row(
+                                //                 mainAxisAlignment:
+                                //                     MainAxisAlignment.start,
+                                //                 crossAxisAlignment:
+                                //                     CrossAxisAlignment.center,
+                                //                 children: [
+                                //                   Expanded(
+                                //                     child: Align(
+                                //                       alignment:
+                                //                           Alignment.bottomLeft,
+                                //                       child: SizedBox(
+                                //                         height: 40,
+                                //                         child: TextField(
+                                //                           maxLines: 1,
+                                //                           decoration:
+                                //                               InputDecoration(
+                                //                             border:
+                                //                                 const OutlineInputBorder(
+                                //                               borderRadius:
+                                //                                   BorderRadius.all(
+                                //                                       Radius.circular(
+                                //                                           16.0)),
+                                //                               borderSide:
+                                //                                   BorderSide(
+                                //                                 color: Colors
+                                //                                     .white70,
+                                //                                 width: 1.0,
+                                //                               ),
+                                //                             ),
+                                //                             filled: true,
+                                //                             hintStyle:
+                                //                                 const TextStyle(
+                                //                               color: Colors.white,
+                                //                               fontSize: 13,
+                                //                             ),
+                                //                             hintText:
+                                //                                 AppLocalizations.of(
+                                //                                         context)!
+                                //                                     .sendMessage,
+                                //                             fillColor: Colors
+                                //                                 .transparent,
+                                //                           ),
+                                //                         ),
+                                //                       ),
+                                //                     ),
+                                //                   ),
+                                //                   Row(
+                                //                     mainAxisSize:
+                                //                         MainAxisSize.min,
+                                //                     children: [
+                                //                       Padding(
+                                //                         padding: const EdgeInsets
+                                //                                 .symmetric(
+                                //                             horizontal: 20),
+                                //                         child: InkWell(
+                                //                           child: const Icon(
+                                //                             Icons.favorite_border,
+                                //                             color: Colors.white,
+                                //                           ),
+                                //                           onTap: () {
+                                //                             //Like
+                                //                           },
+                                //                         ),
+                                //                       ),
+                                //                       Transform.rotate(
+                                //                         angle: -math.pi / 7,
+                                //                         child: Padding(
+                                //                           padding:
+                                //                               const EdgeInsets
+                                //                                       .only(
+                                //                                   bottom: 8.0),
+                                //                           child: InkWell(
+                                //                             child: const Icon(
+                                //                               Icons.send_outlined,
+                                //                               color: Colors.white,
+                                //                             ),
+                                //                             onTap: () {
+                                //                               //Send the post
+                                //                             },
+                                //                           ),
+                                //                         ),
+                                //                       ),
+                                //                     ],
+                                //                   ),
+                                //                 ],
+                                //               ),
+                                //             ],
+                                //           ),
+                                //         ),
+                                //       ),
+                                //     ],
+                                //   ),
+                                // ),
+                                storyContentState.playState == PlayState.loading
+                                    ? const StoryProgressIndicator()
+                                    : const SizedBox.shrink(),
+                                StoryUserLayer(
+                                  animationController: _animationController,
+                                  tempAnimationController:
+                                      AnimationController(vsync: this),
+                                  stories: widget.stories,
+                                  closePage: _closeStoryEvent,
+                                  carouselIndex: carouselIndex,
+                                ),
+                              ],
+                            );
                           }
-                        },
-                        slideBuilder: (carouselIndex) {
                           return Stack(
                             children: [
-                              GestureDetector(
-                                //get the very first tap event
-                                onTapDown: (details) {
-                                  screenWidth =
-                                      MediaQuery.of(context).size.width;
-                                  dx = details.globalPosition.dx;
-                                  _pauseStoryContentEvent();
-                                },
-                                //validate tap event
-                                onTap: () {
-                                  if (dx! < screenWidth! / 3) {
-                                    _previousStoryContentEvent();
-                                  } else {
-                                    _nextStoryContentEvent();
-                                  }
-                                },
-                                //resume the story
-                                onLongPressEnd: (_) =>
-                                    _resumeStoryContentEvent(),
-                                child: Hero(
-                                    tag: widget.stories[carouselIndex].id,
-                                    child: PageView.builder(
-                                      controller: _pageController,
-                                      physics:
-                                          const NeverScrollableScrollPhysics(),
-                                      itemCount: widget.stories[carouselIndex]
-                                          .userStories.length,
-                                      itemBuilder: (context, storyIndex) {
-                                        // final storyContent = storyState
-                                        //     .story.userStories[storyIndex];
-                                        final storyContent = widget
-                                            .stories[carouselIndex]
-                                            .userStories[storyIndex];
-                                        switch (storyContent.media) {
-                                          case MediaType.image:
-                                            return CachedNetworkImage(
-                                              imageUrl: storyContent.url,
-                                              fit: BoxFit.cover,
-                                            );
-                                          case MediaType.video:
-                                            if (_videoController
-                                                .value.isInitialized) {
-                                              return VideoPlayerWidget(
-                                                  controller: _videoController);
-                                            }
-                                            break;
-                                        }
-                                        return const Center(
-                                          child: CircularProgressIndicator(),
-                                        );
-                                      },
-                                    )),
-                              ),
-                              SafeArea(
-                                child: Column(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12, vertical: 2),
-                                      child: Row(
-                                        children: widget
-                                            .stories[carouselIndex].userStories
-                                            .asMap()
-                                            .map((index, storyItem) {
-                                              return MapEntry(
-                                                index,
-                                                AnimatedBar(
-                                                  animationController:
-                                                      storyState.storyIndex ==
-                                                              carouselIndex
-                                                          ? _animationController
-                                                          : AnimationController(
-                                                              vsync: this),
-                                                  position: index,
-                                                  currentIndex:
-                                                      storyState.storyIndex ==
-                                                              carouselIndex
-                                                          ? storyContentState
-                                                              .storyContentIndex
-                                                          : 0,
-                                                ),
-                                              );
-                                            })
-                                            .values
-                                            .toList(),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 20, vertical: 8),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                CachedNetworkImage(
-                                                  imageUrl: widget
-                                                      .stories[carouselIndex]
-                                                      .user
-                                                      .profileImage,
-                                                  imageBuilder: (context,
-                                                          imageProvider) =>
-                                                      Container(
-                                                    height: 32,
-                                                    width: 32,
-                                                    decoration: BoxDecoration(
-                                                      shape: BoxShape.circle,
-                                                      image: DecorationImage(
-                                                        image: imageProvider,
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 12),
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      RichText(
-                                                        text: TextSpan(
-                                                          style:
-                                                              const TextStyle(
-                                                                  color: Colors
-                                                                      .black),
-                                                          children: [
-                                                            TextSpan(
-                                                              text: widget
-                                                                  .stories[
-                                                                      carouselIndex]
-                                                                  .user
-                                                                  .name,
-                                                              style:
-                                                                  const TextStyle(
-                                                                color: Colors
-                                                                    .white,
-                                                                fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                            TextSpan(
-                                                              text: storyState
-                                                                          .storyIndex ==
-                                                                      carouselIndex
-                                                                  ? '  ${storyState.story.userStories[storyContentState.storyContentIndex].sentTimestamp.toString()}h'
-                                                                  : '  ${widget.stories[carouselIndex].userStories[0].sentTimestamp.toString()}h',
-                                                              style:
-                                                                  const TextStyle(
-                                                                color: Colors
-                                                                    .white60,
-                                                                fontSize: 13,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.bottomRight,
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        InkWell(
-                                                          child: const Icon(Icons
-                                                              .more_horiz_outlined),
-                                                          onTap: () {
-                                                            //Settings
-                                                          },
-                                                        ),
-                                                        IconButton(
-                                                          icon: const Icon(
-                                                            Icons.close,
-                                                          ),
-                                                          onPressed: () {
-                                                            _closeStoryEvent();
-                                                          },
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              children: [
-                                                Expanded(
-                                                  child: Align(
-                                                    alignment:
-                                                        Alignment.bottomLeft,
-                                                    child: SizedBox(
-                                                      height: 40,
-                                                      child: TextField(
-                                                        maxLines: 1,
-                                                        decoration:
-                                                            InputDecoration(
-                                                          border:
-                                                              const OutlineInputBorder(
-                                                            borderRadius:
-                                                                BorderRadius.all(
-                                                                    Radius.circular(
-                                                                        16.0)),
-                                                            borderSide:
-                                                                BorderSide(
-                                                              color: Colors
-                                                                  .white70,
-                                                              width: 1.0,
-                                                            ),
-                                                          ),
-                                                          filled: true,
-                                                          hintStyle:
-                                                              const TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 13,
-                                                          ),
-                                                          hintText:
-                                                              AppLocalizations.of(
-                                                                      context)!
-                                                                  .sendMessage,
-                                                          fillColor: Colors
-                                                              .transparent,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                              .symmetric(
-                                                          horizontal: 20),
-                                                      child: InkWell(
-                                                        child: const Icon(
-                                                          Icons.favorite_border,
-                                                          color: Colors.white,
-                                                        ),
-                                                        onTap: () {
-                                                          //Like
-                                                        },
-                                                      ),
-                                                    ),
-                                                    Transform.rotate(
-                                                      angle: -math.pi / 7,
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                    .only(
-                                                                bottom: 8.0),
-                                                        child: InkWell(
-                                                          child: const Icon(
-                                                            Icons.send_outlined,
-                                                            color: Colors.white,
-                                                          ),
-                                                          onTap: () {
-                                                            //Send the post
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              const StoryProgressIndicator(),
+                              StoryUserLayer(
+                                animationController: _animationController,
+                                tempAnimationController:
+                                    AnimationController(vsync: this),
+                                stories: widget.stories,
+                                closePage: _closeStoryEvent,
+                                carouselIndex: carouselIndex,
                               ),
                             ],
                           );
                         },
-                      ),
-                    ),
-                  );
-                }
-                return const CircularProgressIndicator();
-              },
+                      );
+                    },
+                  ),
+                ),
+              ),
             );
           }
-          return const CircularProgressIndicator();
+          return const SizedBox.shrink();
         },
       ),
     );

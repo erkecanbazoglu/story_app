@@ -8,9 +8,9 @@ class CacheManagerService {
   }
 
   ///Caches the videos if not cached
-  static void cachedForUrl(String url) async {
+  static Future<void> cachedForUrl(String url) async {
     await DefaultCacheManager().getSingleFile(url).then((value) {
-      print('downloaded successfully done for $url');
+      // print('downloaded successfully done for $url');
     });
   }
 }
