@@ -49,8 +49,9 @@ Below you can see the changes:
 - Animation bar is fixed and shows the correct index.
 
 Notes:
-Flutter Version: 2.10.4 - Dart Version: 2.12.4
-Don't forget to close "background caching" for testing loading state of the stories.
+
+Flutter Version: 2.10.4 - Dart Version: 2.12.4  
+Don't forget to close "background caching" for testing loading state of the stories.  
 Please upgrade dependencies by "flutter pub upgrade" and more importantly "flutter pub upgrade flutter_carousel_slider".
 
 ## Introduction
