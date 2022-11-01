@@ -171,7 +171,9 @@ class _StoryPageState extends State<StoryPage>
     } else {
       imageFile = fileInfo.file;
     }
-    // _playStoryContentEvent();
+    if (storyContentBloc.state.playState == PlayState.begin) {
+      _playStoryContentEvent();
+    }
     return imageFile;
   }
 
