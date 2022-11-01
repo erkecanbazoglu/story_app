@@ -368,7 +368,7 @@ class _StoryPageState extends State<StoryPage>
     _initControllers();
 
     ///Background image and video caching
-    // _backgroundCaching();
+    _backgroundCaching();
 
     ///Playing the first Story Content
     _loadStoryContentEvent();
