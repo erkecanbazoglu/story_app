@@ -28,7 +28,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       LoadStoryContent event, Emitter<StoryContentState> emit) async {
     emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
         event.storyContentIndex, PlayState.loading));
-    print("Load Story Content event: " + state.toString());
+    // print("Load Story Content event: " + state.toString());
   }
 
   ///Play Story Content Event
@@ -37,7 +37,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       PlayStoryContent event, Emitter<StoryContentState> emit) async {
     emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
         event.storyContentIndex, PlayState.begin));
-    print("Play Story Content event: " + state.toString());
+    // print("Play Story Content event: " + state.toString());
   }
 
   ///Pause Story Content Event
@@ -46,7 +46,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       PauseStoryContent event, Emitter<StoryContentState> emit) async {
     emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
         event.storyContentIndex, PlayState.paused));
-    print("Pause Story Content event: " + state.toString());
+    // print("Pause Story Content event: " + state.toString());
   }
 
   ///Resume Story Content Event
@@ -55,7 +55,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       ResumeStoryContent event, Emitter<StoryContentState> emit) async {
     emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
         event.storyContentIndex, PlayState.resume));
-    print("Resume Story Content event: " + state.toString());
+    // print("Resume Story Content event: " + state.toString());
   }
 
   ///Next Story Content Event
@@ -73,7 +73,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       // emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
       //     event.storyContentIndex, PlayState.next));
     }
-    print("Next Story Content event: " + state.toString());
+    // print("Next Story Content event: " + state.toString());
   }
 
   ///Previous Story Content Event
@@ -91,7 +91,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
       // emit(StoryContentPlayed(event.story.userStories[event.storyContentIndex],
       //     event.storyContentIndex, PlayState.prev));
     }
-    print("Previous Story Content event: " + state.toString());
+    // print("Previous Story Content event: " + state.toString());
   }
 
   ///Finish Story Content Event
@@ -99,7 +99,7 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
   Future<void> _onFinishStoryContent(
       FinishStoryContent event, Emitter<StoryContentState> emit) async {
     emit(StoryContentFinished(event.storyContentIndex, PlayState.none));
-    print("Finish Story Content event: " + state.toString());
+    // print("Finish Story Content event: " + state.toString());
   }
 
   ///Reset Story Content Event
@@ -107,6 +107,6 @@ class StoryContentBloc extends Bloc<StoryContentEvent, StoryContentState> {
   Future<void> _onResetStoryContent(
       ResetStoryContent event, Emitter<StoryContentState> emit) async {
     emit(const StoryContentInitial());
-    print("Reset Story Content event: " + state.toString());
+    // print("Reset Story Content event: " + state.toString());
   }
 }

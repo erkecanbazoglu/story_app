@@ -38,16 +38,20 @@ Concepts:
 
 ## UPDATES
 
-Below you can track the changes:
+Below you can see the changes:
 
-- Story and Story Content Bloc implemented in Story Page
-- Logic and UI separated, functions mostly moved to logic
-- Cache Manager Service initialized and caching moved to here
-- JSON serialization implemented to create toJSON & fromJSON methods
-- Hydrated Storage implemented instead of Shared Preferences
-- Animations are paused during the story slides and started when the slide is over
-- Changes made in Flutter Carousel Slider Package. You can see [Pull Requests](https://github.com/UdaraWanasinghe/FlutterCarouselSlider/pulls?q=is%3Apr+is%3Aclosed).
-- Bug Fixes: Animation, Story Playing, Animated Progress Bars and etc.
+- Loading State implemented to wait story load before starting.
+- Images turned to Future Builder instead of Cached Network Image. Caching implemented with Cache Manager.
+- Background caching implemented. When a story opens, caching is done in the background for other stories as well.
+- Stories continue from the last Story Content, where the user left off.
+- Double clicks disabled, navigator pop by slide disabled.
+- When sliding stories, the next story turned to dynamic instead of the initial story content.
+- Animation bar is fixed and shows the correct index.
+
+Notes:
+Flutter Version: 2.10.4 - Dart Version: 2.12.4
+Don't forget to close "background caching" for testing loading state of the stories.
+Please upgrade dependencies by "flutter pub upgrade" and more importantly "flutter pub upgrade flutter_carousel_slider".
 
 ## Introduction
 
@@ -82,6 +86,8 @@ Test Pages: There are 5 test pages in the others folder
 
 Below you can see the list of widgets in the UI component seperated from the screens.
 
+Story Use Layer: The user layer placed on top of stories
+Story Progress Indicator: Progress indicator used in stories
 Photo Post: Photo posts which is on the Home Page  
 Story Avatar: Story Avatars at the top of the Home Page  
 Video Player: Full screen video player widget  
@@ -101,16 +107,20 @@ Story Content Bloc: Story Content logic with extra pause and resume options
 Internet Cubit: Internet is fetched through internet cubit  
 User Bloc: Initialized but Deprecated, could be further improvement
 
+Storage:
+
+Bloc Hydrated Storage is implemented to save the state of the objects.
+
 ### Data
 
 Data is composed of 3 parts: Models, Providers and Repositories
 
-Models:
+Data Models:
 
 User: User model implemented here  
-Story: Story and Story Content model is implemented here
+Story: Stories, Story and Story Content model is implemented here
 
-Providers:
+Data Providers:
 
 Photos: Photo provider consist of different implementations
 
@@ -125,7 +135,7 @@ Note: Only a few videos are fetched through the API
 
 Both photo and video API requests can be modified, there is quotas written on each one
 
-Repos:
+Data Repositories:
 
 User: Users are fetched here, through samples users  
 Story Content: Story Contents are generated through providers and models  
@@ -141,16 +151,17 @@ Services: Some other services are implemented here
 
 Navigator Service: Page navigations are managed here  
 Shared Preferences Service: Local data such as Seen/Unseen Stories are managed here
+Cache Manager Service: The story images and videos are cached through here
 
 ### Packages
 
 You can see pubspec file to see packages.
 
-For cubic transition between stories the flutter carousel slider package is used: flutter_carousel_slider
+For cubic transition between stories the flutter carousel slider package is used: Flutter Carousel Slider Package.
 
 However, due to incapabilities, it resulted in some bugs. But the package is forked and edited in order to fix the issues and downloaded from my github while using in the application.
 
-Also, the fix is sent as a pull request to the package owner: https://github.com/UdaraWanasinghe/FlutterCarouselSlider
+Pull Requests are sent to the package owner and some of them is approved. You can see them [here](https://github.com/UdaraWanasinghe/FlutterCarouselSlider/pulls?q=is%3Apr+is%3Aclosed).
 
 ## Author
 

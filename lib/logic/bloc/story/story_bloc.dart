@@ -22,13 +22,13 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
 
   Future<void> _onOpenStory(OpenStory event, Emitter<StoryState> emit) async {
     ///Getting the first unseen Story Content
-    int firstStoryContent =
-        _getFirstUnseenStoryContent(event.stories[event.storyIndex]);
-    event.stories[event.storyIndex].storyPlayIndex = firstStoryContent;
+    // int firstStoryContent =
+    //     _getFirstUnseenStoryContent(event.stories[event.storyIndex]);
+    // event.stories[event.storyIndex].storyPlayIndex = firstStoryContent;
 
     emit(StoryOpened(event.stories[event.storyIndex], event.storyIndex,
         OpenState.playCurrent));
-    print("Open Story event: " + state.toString());
+    // print("Open Story event: " + state.toString());
   }
 
   ///CLose Story Event
@@ -36,7 +36,7 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
   Future<void> _onCloseStory(CloseStory event, Emitter<StoryState> emit) async {
     int storyIndex = event.storyIndex;
     emit(StoryOpened(event.stories[storyIndex], storyIndex, OpenState.closed));
-    print("Close Story event: " + state.toString());
+    // print("Close Story event: " + state.toString());
   }
 
   ///Next Story Event
@@ -51,7 +51,7 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
       emit(
           StoryOpened(event.stories[storyIndex], storyIndex, OpenState.closed));
     }
-    print("Next Story event: " + state.toString());
+    // print("Next Story event: " + state.toString());
   }
 
   ///Previous Story Event
@@ -67,7 +67,7 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
       emit(
           StoryOpened(event.stories[storyIndex], storyIndex, OpenState.closed));
     }
-    print("Previous Story event: " + state.toString());
+    // print("Previous Story event: " + state.toString());
   }
 
   ///Getting the First Unseen Index

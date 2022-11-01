@@ -19,7 +19,7 @@ abstract class StoryContentState extends Equatable {
 
 //States:
 //StoryContentInitial
-//StoryContentPlayed
+//StoryContentLoading
 //StoryContentPlayed
 //StoryContentError
 

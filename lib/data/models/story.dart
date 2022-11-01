@@ -5,8 +5,7 @@ part 'story.g.dart';
 
 ///STORIES MODEL
 
-///Set "explicitToJson: true" for nested objects
-
+//Set "explicitToJson: true" for nested objects
 @JsonSerializable(explicitToJson: true)
 class Stories {
   final List<Story> stories;
@@ -23,8 +22,8 @@ class Stories {
   /// Connect the generated [_$StoriesToJson] function to the `toJson` method.
   Map<String, dynamic> toJson() => _$StoriesToJson(this);
 
-  // @override
-  // String toString() => 'Stories: {stories: $stories}';
+  @override
+  String toString() => 'Stories: {stories: $stories}';
 }
 
 ///STORY MODEL
@@ -52,9 +51,9 @@ class Story {
   /// Connect the generated [_$StoryToJson] function to the `toJson` method.
   Map<String, dynamic> toJson() => _$StoryToJson(this);
 
-  // @override
-  // String toString() =>
-  //     'Story: {id: $id, storySeen: $storySeen, user: $user, userStories: $userStories, storyPlayIndex: $storyPlayIndex}';
+  @override
+  String toString() =>
+      'Story: {id: $id, storySeen: $storySeen, user: $user, userStories: $userStories, storyPlayIndex: $storyPlayIndex}';
 }
 
 ///STORY CONTENT MODEL
@@ -90,7 +89,7 @@ class StoryContent {
   /// Connect the generated [_$StoryContentToJson] function to the `toJson` method.
   Map<String, dynamic> toJson() => _$StoryContentToJson(this);
 
-  // @override
-  // String toString() =>
-  //     'StoryContent: {id: $id, media: $media, duration: $duration, sentTimestamp: $sentTimestamp, contentSeen: $contentSeen, url: $url}';
+  @override
+  String toString() =>
+      'StoryContent: {id: $id, media: $media, duration: $duration, sentTimestamp: $sentTimestamp, contentSeen: $contentSeen, url: $url}';
 }

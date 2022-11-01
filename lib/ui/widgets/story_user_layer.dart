@@ -7,7 +7,6 @@ import '../../logic/bloc/story/story_bloc.dart';
 import '../../logic/bloc/story_content/story_content_bloc.dart';
 import 'animated_bar.dart';
 import 'dart:math' as math;
-import 'story_progress_indicator.dart';
 
 class StoryUserLayer extends StatelessWidget {
   final AnimationController animationController;
@@ -15,6 +14,8 @@ class StoryUserLayer extends StatelessWidget {
   final List<Story> stories;
   final VoidCallback closePage;
   final int carouselIndex;
+  final int nextAnimationIndex;
+  final int previousAnimationIndex;
   // final int currentIndex;
 
   const StoryUserLayer({
@@ -24,6 +25,8 @@ class StoryUserLayer extends StatelessWidget {
     required this.stories,
     required this.closePage,
     required this.carouselIndex,
+    required this.nextAnimationIndex,
+    required this.previousAnimationIndex,
     // required this.currentIndex,
   }) : super(key: key);
 
@@ -56,10 +59,14 @@ class StoryUserLayer extends StatelessWidget {
                                             ? animationController
                                             : tempAnimationController,
                                     position: index,
-                                    currentIndex: storyState.storyIndex ==
-                                            carouselIndex
-                                        ? storyContentState.storyContentIndex
-                                        : 0,
+                                    currentIndex: carouselIndex ==
+                                            storyState.storyIndex + 1
+                                        ? nextAnimationIndex
+                                        : carouselIndex ==
+                                                storyState.storyIndex - 1
+                                            ? previousAnimationIndex
+                                            : storyContentState
+                                                .storyContentIndex,
                                   ),
                                 );
                               })

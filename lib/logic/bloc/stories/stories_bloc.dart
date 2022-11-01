@@ -56,10 +56,21 @@ class StoriesBloc extends HydratedBloc<StoriesEvent, StoriesState> {
     ///Change to false to make Story Content unseen again
     stories[storyIndex].userStories[storyContentIndex].contentSeen = true;
 
-    ///Change to false to make Story unseen again
+    ///The last Story Content
     if (storyContentIndex == stories[storyIndex].userStories.length - 1) {
+      ///Change to false to make Story unseen again
       stories[storyIndex].storySeen = true;
     }
+
+    ///Story Play Index
+    if (stories[storyIndex].storySeen) {
+      ///Resetting story play index (all stories seen)
+      stories[storyIndex].storyPlayIndex = 0;
+    } else {
+      ///Setting story play index (not all stories seen)
+      stories[storyIndex].storyPlayIndex = storyContentIndex + 1;
+    }
+
     Stories storiesObject = Stories(
       stories: stories,
     );
@@ -108,7 +119,7 @@ class StoriesBloc extends HydratedBloc<StoriesEvent, StoriesState> {
       //To make stories null
       // final stories = null;
       if (stories == null) {
-        print("stories: null");
+        // print("stories: null");
       } else {
         final updatedStories = _updateStories(stories.stories);
         return StoriesLoaded(updatedStories);
