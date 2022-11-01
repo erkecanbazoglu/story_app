@@ -171,9 +171,6 @@ class _StoryPageState extends State<StoryPage>
     } else {
       imageFile = fileInfo.file;
     }
-    if (storyContentBloc.state.playState == PlayState.begin) {
-      _playStoryContentEvent();
-    }
     return imageFile;
   }
 
@@ -248,7 +245,11 @@ class _StoryPageState extends State<StoryPage>
     ///Caching checked and implemented during the loading state
     switch (storyContent.media) {
       case MediaType.image:
-        // Image caching moved to Future Builder
+        final fileInfo =
+            await CacheManagerService.checkCacheFor(storyContent.url);
+        if (fileInfo == null) {
+          await CacheManagerService.cachedForUrl(storyContent.url);
+        }
         break;
       case MediaType.video:
         final fileInfo =
@@ -367,7 +368,7 @@ class _StoryPageState extends State<StoryPage>
     _initControllers();
 
     ///Background image and video caching
-    _backgroundCaching();
+    // _backgroundCaching();
 
     ///Playing the first Story Content
     _loadStoryContentEvent();
