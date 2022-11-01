@@ -171,7 +171,7 @@ class _StoryPageState extends State<StoryPage>
     } else {
       imageFile = fileInfo.file;
     }
-    _playStoryContentEvent();
+    // _playStoryContentEvent();
     return imageFile;
   }
 
@@ -267,10 +267,7 @@ class _StoryPageState extends State<StoryPage>
 
     ///Here latency can be tested
     await Future.delayed(const Duration(milliseconds: 0), () {});
-
-    if (storyContent.media == MediaType.video) {
-      _playStoryContentEvent();
-    }
+    _playStoryContentEvent();
   }
 
   ///StoryBloc Events
